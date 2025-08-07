@@ -9,13 +9,14 @@ export default function Navbar() {
   const navLinks = [
     { name: 'How It Works', href: '#how-it-works' },
     { name: 'Features', href: '#features' },
-    { name: 'Pricing', href: '#pricing' },
+    { name: 'Register Item', href: '/register' },
     { name: 'About', href: '#about' }
   ];
 
   return (
     <nav className="relative z-50">
-      {/* Main Navbar Container */}
+
+        {/* main container begins here */}
       <div className="container mx-auto px-6 py-4">
         <div className="max-w-4xl mx-auto">
           <div 
@@ -29,7 +30,7 @@ export default function Navbar() {
               )`
             }}
           >
-            {/* Glass morphism overlay */}
+            {/* Glass morphism shown here */}
             <div 
               className="absolute inset-0"
               style={{
@@ -42,7 +43,7 @@ export default function Navbar() {
               }}
             />
 
-            {/* Top edge highlight */}
+            {/* highlighting the edges for beautyy */}
             <div 
               className="absolute top-0 left-4 right-4 h-px"
               style={{
@@ -62,7 +63,6 @@ export default function Navbar() {
                 </div>
                 <div>
                   <h1 className="text-xl font-clash text-main">Auctor</h1>
-                  <p className="text-xs text-muted -mt-1">Built on Camp</p>
                 </div>
               </div>
 
@@ -80,9 +80,8 @@ export default function Navbar() {
                 ))}
               </div>
 
-              {/* Connect Wallet Button & Mobile Menu */}
-              <div className="flex items-center gap-4">
-                {/* Connect Wallet Button */}
+              {/* Desktop - Connect Wallet Button only */}
+              <div className="hidden md:flex items-center">
                 <button
                   className="relative px-6 py-2.5 rounded-full border border-gold/30 overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-glow-gold"
                   style={{
@@ -122,11 +121,13 @@ export default function Navbar() {
                     }}
                   />
                 </button>
+              </div>
 
-                {/* Mobile Menu Button */}
+              {/* Mobile - Menu Button only */}
+              <div className="md:hidden">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="md:hidden w-10 h-10 rounded-full border border-main/20 flex items-center justify-center text-muted hover:text-main transition-colors duration-300"
+                  className="w-10 h-10 rounded-full border border-main/20 flex items-center justify-center text-muted hover:text-main transition-colors duration-300"
                   style={{
                     background: `linear-gradient(135deg, 
                       rgba(255, 255, 255, 0.05) 0%, 

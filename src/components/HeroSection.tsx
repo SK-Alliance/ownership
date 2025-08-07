@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function HeroSection() {
   const [isVideoHovered, setIsVideoHovered] = useState(false);
@@ -121,14 +122,16 @@ export default function HeroSection() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
             variants={childVariants}
           >
-            <motion.button
-              className="btn-primary text-lg px-8 py-4 group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Get Started
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
+            <Link href="/register">
+              <motion.button
+                className="btn-primary text-lg px-8 py-4 group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Register Item
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
 
             <motion.button
               className="btn-secondary text-lg px-8 py-4 group relative"
