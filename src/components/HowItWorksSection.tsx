@@ -74,7 +74,7 @@ export default function HowItWorksSection() {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
+        ease: [0.4, 0, 0.2, 1] as const
       }
     },
   };
@@ -85,7 +85,7 @@ export default function HowItWorksSection() {
       scale: 1, 
       rotate: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 200,
         damping: 10,
         delay: 0.2
@@ -121,9 +121,9 @@ export default function HowItWorksSection() {
               <h2 className="text-4xl md:text-5xl font-clash text-main mb-4">
                 Simple Flow, <span className="text-gold">Solid Record</span>
               </h2>
-              <p className="text-lg text-muted max-w-2xl mx-auto">
+              {/* <p className="text-lg text-muted max-w-2xl mx-auto">
                 From upload to ownership - secure your assets in four simple steps
-              </p>
+              </p> */}
             </motion.div>
           </motion.div>
 
@@ -297,7 +297,7 @@ export default function HowItWorksSection() {
         transition={{
           duration: 8,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: [0.4, 0, 0.6, 1] as const
         }}
       />
       <motion.div
@@ -310,7 +310,7 @@ export default function HowItWorksSection() {
         transition={{
           duration: 6,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: [0.4, 0, 0.6, 1] as const
         }}
       />
     </section>
