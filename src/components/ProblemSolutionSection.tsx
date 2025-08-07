@@ -139,7 +139,7 @@ export default function ProblemSolutionSection() {
                   </h3>
 
                   <p className="text-sm text-muted leading-relaxed mb-4">
-                    Traceable, transferable ownership that can't be lost or disputed.
+                    Traceable, transferable ownership that can&apos;t be lost or disputed.
                   </p>
 
                   {/* Benefits Grid */}

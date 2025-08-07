@@ -182,7 +182,7 @@ export default function ConfirmAndMintStep() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-main">Verification Process</p>
-                    <p className="text-xs text-muted">We'll verify your documents and ownership proof</p>
+                    <p className="text-xs text-muted">We&apos;ll verify your documents and ownership proof</p>
                   </div>
                 </div>
                 
@@ -202,7 +202,7 @@ export default function ConfirmAndMintStep() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-main">Certificate Ready</p>
-                    <p className="text-xs text-muted">You'll receive your tamperproof ownership certificate</p>
+                    <p className="text-xs text-muted">You&apos;ll receive your tamperproof ownership certificate</p>
                   </div>
                 </div>
               </div>

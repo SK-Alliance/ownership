@@ -9,6 +9,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'How It Works', href: '#how-it-works' },
     { name: 'Features', href: '#features' },
+    { name: 'Dashboard', href: '/dashboard' },
     { name: 'Register Item', href: '/register' },
     { name: 'About', href: '#about' }
   ];

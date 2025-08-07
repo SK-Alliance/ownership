@@ -1,7 +1,6 @@
 'use client';
 
-import { Shield, Github, Twitter, Linkedin } from 'lucide-react';
-import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, Key } from 'react';
+import { Shield, Twitter, Linkedin } from 'lucide-react';
 
 export default function Footer() {
     const footerLinks = {

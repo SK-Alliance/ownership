@@ -45,10 +45,10 @@ export default function WhatMakesItDifferentSection() {
       scale: 1,
       transition: {
         duration: 0.7,
-        ease: "easeOut"
+        ease: [0.25, 0.1, 0.25, 1] as const
       }
     },
-  };
+  } as const;
 
   return (
     <section className="py-24 bg-surface/20 relative overflow-hidden">
