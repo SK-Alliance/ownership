@@ -4,7 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useRegistrationStore } from '@/lib/stores/registration-store';
-import { ArrowLeft, ArrowRight, Zap } from 'lucide-react';
+import { useOriginIPNFT } from '@/lib/hooks/useOriginIPNFT';
+import { ArrowLeft, ArrowRight, Zap, AlertCircle, CheckCircle } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 import ItemDetailsStep from './ItemDetailsStep';
 import UploadProofStep from './UploadProofStep';
@@ -17,6 +20,8 @@ const steps = [
 ];
 
 export default function RegistrationForm() {
+  const { isConnected } = useAccount();
+  const { createIPNFT, isLoading: isCreatingNFT, error: nftError, tokenId } = useOriginIPNFT();
   const {
     currentStep,
     nextStep,
@@ -55,18 +60,26 @@ export default function RegistrationForm() {
   };
 
   const handleMint = async () => {
+    if (!isConnected) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
     setLoading(true);
     
-    // Simulate minting process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Here you would integrate with blockchain
-    console.log('Minting:', { itemDetails, proofFiles });
-    
-    setLoading(false);
-    
-    // Show success or redirect
-    alert('Successfully minted! (This is just a simulation)');
+    try {
+      await createIPNFT();
+      
+      if (tokenId) {
+        // Success - show success message or redirect
+        alert(`Successfully created IP Certificate! Token ID: ${tokenId}`);
+      }
+    } catch (error) {
+      console.error('Minting error:', error);
+      // Error is handled by the hook
+    } finally {
+      setLoading(false);
+    }
   };
 
   const canProceed = () => {
@@ -164,6 +177,56 @@ export default function RegistrationForm() {
             </AnimatePresence>
           </div>
 
+          {/* Connection Status & Error Display */}
+          {!isConnected && currentStep === 3 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 max-w-2xl mx-auto"
+            >
+              <div className="bg-orange-500/5 border border-orange-500/20 rounded-lg p-4 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-main">Wallet Required</p>
+                  <p className="text-xs text-muted">Please connect your wallet to mint your IP certificate</p>
+                </div>
+                <ConnectButton />
+              </div>
+            </motion.div>
+          )}
+
+          {nftError && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 max-w-2xl mx-auto"
+            >
+              <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-4 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-main">Minting Failed</p>
+                  <p className="text-xs text-muted">{nftError}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {tokenId && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 max-w-2xl mx-auto"
+            >
+              <div className="bg-green/5 border border-green/20 rounded-lg p-4 flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-main">Success!</p>
+                  <p className="text-xs text-muted">Your IP Certificate has been minted. Token ID: {tokenId}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Navigation Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -202,18 +265,18 @@ export default function RegistrationForm() {
             ) : (
               <Button
                 onClick={handleMint}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-8 py-3 bg-green hover:bg-green/90 text-bg-main"
+                disabled={isLoading || isCreatingNFT || !isConnected}
+                className="flex items-center gap-2 px-8 py-3 bg-green hover:bg-green/90 text-bg-main disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? (
+                {isLoading || isCreatingNFT ? (
                   <>
                     <div className="w-4 h-4 border-2 border-bg-main/20 border-t-bg-main rounded-full animate-spin" />
-                    Minting...
+                    Creating Certificate...
                   </>
                 ) : (
                   <>
                     <Zap className="w-4 h-4" />
-                    Mint Onchain
+                    Mint IP Certificate
                   </>
                 )}
               </Button>

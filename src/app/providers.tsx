@@ -4,14 +4,15 @@ import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { CampProvider } from "@campnetwork/origin/react";
 import { config } from '../../wagmi.config';
 import { basecampTestnet } from 'viem/chains';
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    const [queryClient] = useState(() => new QueryClient());
+
+    const queryClient = new QueryClient();
     return (
         <QueryClientProvider client={queryClient}>
-
             <WagmiProvider config={config}>
                 <RainbowKitProvider
                     theme={darkTheme({
@@ -22,8 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                         overlayBlur: 'small',
                     })}
                     initialChain={basecampTestnet}>
-
-                    {children}
+                    <CampProvider clientId={process.env.NEXT_PUBLIC_ORIGIN_CLIENT_ID || "demo-client-id"}>
+                        {children}
+                    </CampProvider>
                 </RainbowKitProvider>
             </WagmiProvider>
         </QueryClientProvider>
