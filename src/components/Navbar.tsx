@@ -1,17 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { Shield, Menu, X, Wallet } from 'lucide-react';
+import { Shield, Menu, X } from 'lucide-react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+
+
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Features', href: '#features' },
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Register Item', href: '/register' },
-    { name: 'About', href: '#about' }
+    { name: 'About', href: '/about' }
   ];
 
   return (
@@ -83,45 +84,120 @@ export default function Navbar() {
 
               {/* Desktop - Connect Wallet Button only */}
               <div className="hidden md:flex items-center">
-                <button
-                  className="relative px-6 py-2.5 rounded-full border border-gold/30 overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-glow-gold"
-                  style={{
-                    background: `linear-gradient(135deg, 
-                      rgba(255, 214, 107, 0.1) 0%, 
-                      rgba(255, 214, 107, 0.05) 50%, 
-                      transparent 100%
-                    )`
-                  }}
-                >
-                  {/* Button glass overlay */}
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{
-                      background: `linear-gradient(135deg, 
-                        rgba(255, 214, 107, 0.15) 0%, 
-                        rgba(255, 214, 107, 0.08) 50%, 
-                        transparent 100%
-                      )`
-                    }}
-                  />
-                  
-                  <div className="relative z-10 flex items-center gap-2">
-                    <Wallet className="w-4 h-4 text-gold" />
-                    <span className="text-gold font-medium text-sm">Connect Wallet</span>
-                  </div>
+                <ConnectButton.Custom>
+                  {({
+                    account,
+                    chain,
+                    openAccountModal,
+                    openChainModal,
+                    openConnectModal,
+                    authenticationStatus,
+                    mounted,
+                  }) => {
+                    // Note: If your app doesn't use authentication, you
+                    // can remove all 'authenticationStatus' checks
+                    const ready = mounted && authenticationStatus !== 'loading';
+                    const connected =
+                      ready &&
+                      account &&
+                      chain &&
+                      (!authenticationStatus ||
+                        authenticationStatus === 'authenticated');
 
-                  {/* Button highlight edge */}
-                  <div 
-                    className="absolute top-0 left-2 right-2 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{
-                      background: `linear-gradient(90deg, 
-                        transparent, 
-                        rgba(255, 214, 107, 0.4), 
-                        transparent
-                      )`
-                    }}
-                  />
-                </button>
+                    return (
+                      <div
+                        {...(!ready && {
+                          'aria-hidden': true,
+                          'style': {
+                            opacity: 0,
+                            pointerEvents: 'none',
+                            userSelect: 'none',
+                          },
+                        })}
+                      >
+                        {(() => {
+                          if (!connected) {
+                            return (
+                              <button
+                                onClick={openConnectModal}
+                                className="relative px-6 py-2.5 rounded-full border border-gold/30 overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-glow-gold"
+                                style={{
+                                  background: `linear-gradient(135deg, 
+                                    rgba(255, 214, 107, 0.1) 0%, 
+                                    rgba(255, 214, 107, 0.05) 50%, 
+                                    transparent 100%
+                                  )`
+                                }}
+                              >
+                                {/* Button glass overlay */}
+                                <div 
+                                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                  style={{
+                                    background: `linear-gradient(135deg, 
+                                      rgba(255, 214, 107, 0.15) 0%, 
+                                      rgba(255, 214, 107, 0.08) 50%, 
+                                      transparent 100%
+                                    )`
+                                  }}
+                                />
+                                
+                                <div className="relative z-10 flex items-center gap-2">
+                                  <span className="text-gold font-medium text-sm">Connect Wallet</span>
+                                </div>
+
+                                {/* Button highlight edge */}
+                                <div 
+                                  className="absolute top-0 left-2 right-2 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                  style={{
+                                    background: `linear-gradient(90deg, 
+                                      transparent, 
+                                      rgba(255, 214, 107, 0.4), 
+                                      transparent
+                                    )`
+                                  }}
+                                />
+                              </button>
+                            );
+                          }
+
+                          if (chain.unsupported) {
+                            return (
+                              <button 
+                                onClick={openChainModal}
+                                className="relative px-4 py-2 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
+                              >
+                                Wrong network
+                              </button>
+                            );
+                          }
+
+                          return (
+                            <button 
+                              onClick={openAccountModal}
+                              className="relative px-4 py-2 rounded-full border border-gold/30 overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-glow-gold"
+                              style={{
+                                background: `linear-gradient(135deg, 
+                                  rgba(255, 214, 107, 0.1) 0%, 
+                                  rgba(255, 214, 107, 0.05) 50%, 
+                                  transparent 100%
+                                )`
+                              }}
+                            >
+                              <div className="relative z-10 flex items-center gap-2">
+                                <span className="text-gold font-medium text-sm">
+                                  {account.displayName}
+                                </span>
+                                <span className="text-gold/70 text-xs">
+                                  {account.displayBalance}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    );
+                  }}
+                </ConnectButton.Custom>
               </div>
 
               {/* Mobile - Menu Button only */}
@@ -184,6 +260,89 @@ export default function Navbar() {
                       {link.name}
                     </a>
                   ))}
+                  
+                  {/* Mobile Connect Button */}
+                  <div className="pt-4 border-t border-main/10">
+                    <ConnectButton.Custom>
+                      {({
+                        account,
+                        chain,
+                        openAccountModal,
+                        openChainModal,
+                        openConnectModal,
+                        authenticationStatus,
+                        mounted,
+                      }) => {
+                        const ready = mounted && authenticationStatus !== 'loading';
+                        const connected =
+                          ready &&
+                          account &&
+                          chain &&
+                          (!authenticationStatus ||
+                            authenticationStatus === 'authenticated');
+
+                        return (
+                          <div
+                            {...(!ready && {
+                              'aria-hidden': true,
+                              'style': {
+                                opacity: 0,
+                                pointerEvents: 'none',
+                                userSelect: 'none',
+                              },
+                            })}
+                          >
+                            {(() => {
+                              if (!connected) {
+                                return (
+                                  <button
+                                    onClick={() => {
+                                      openConnectModal();
+                                      setIsMenuOpen(false);
+                                    }}
+                                    className="w-full px-4 py-3 rounded-full border border-gold/30 bg-gold/10 text-gold font-medium text-sm hover:bg-gold/20 transition-colors"
+                                  >
+                                    Connect Wallet
+                                  </button>
+                                );
+                              }
+
+                              if (chain.unsupported) {
+                                return (
+                                  <button 
+                                    onClick={() => {
+                                      openChainModal();
+                                      setIsMenuOpen(false);
+                                    }}
+                                    className="w-full px-4 py-3 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
+                                  >
+                                    Wrong network
+                                  </button>
+                                );
+                              }
+
+                              return (
+                                <button 
+                                  onClick={() => {
+                                    openAccountModal();
+                                    setIsMenuOpen(false);
+                                  }}
+                                  className="w-full px-4 py-3 rounded-full border border-gold/30 bg-gold/10 text-gold font-medium text-sm hover:bg-gold/20 transition-colors"
+                                >
+                                  {account.displayName}
+                                  {account.displayBalance && (
+                                    <span className="block text-xs text-gold/70 mt-1">
+                                      {account.displayBalance}
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })()}
+                          </div>
+                        );
+                      }}
+                    </ConnectButton.Custom>
+                  </div>
                 </div>
               </div>
             </div>
