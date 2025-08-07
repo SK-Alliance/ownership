@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Inter, DM_Sans } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import '@rainbow-me/rainbowkit/styles.css';
+
 
 // Primary fonts - using Google Fonts for reliability
 const dmSans = DM_Sans({
@@ -45,9 +49,12 @@ export default function RootLayout({
         className={`${dmSans.variable} ${inter.variable} font-dm-sans antialiased bg-main text-main overflow-x-hidden`}
       >
         <Providers>
+          <Navbar />
           {children}
+          <Footer />
         </Providers>
       </body>
     </html>
   );
 }
+

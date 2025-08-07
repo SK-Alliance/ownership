@@ -45,10 +45,10 @@ export default function WhatMakesItDifferentSection() {
       scale: 1,
       transition: {
         duration: 0.7,
-        ease: "easeOut"
+        ease: [0.25, 0.1, 0.25, 1] as const
       }
     },
-  };
+  } as const;
 
   return (
     <section className="py-24 bg-surface/20 relative overflow-hidden">
@@ -75,12 +75,10 @@ export default function WhatMakesItDifferentSection() {
               <span className="text-green text-sm font-medium uppercase tracking-wider mb-3 block">
                 What Makes It Different
               </span>
-              <h2 className="text-4xl md:text-5xl font-clash text-main mb-4">
+              <h2 className="text-4xl md:text-5xl font-clash text-main">
                 Beyond NFTs, <span className="text-green">Beyond Hype</span>
               </h2>
-              <p className="text-lg text-muted max-w-2xl mx-auto">
-                Real ownership for real assets, not just digital collectibles
-              </p>
+
             </motion.div>
           </motion.div>
 
@@ -235,38 +233,6 @@ export default function WhatMakesItDifferentSection() {
                 )`
               }}
             />
-          </motion.div>
-
-          {/* Bottom Statement */}
-          <motion.div
-            className="text-center mt-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            <div className="max-w-3xl mx-auto p-6 rounded-card border border-gold/10 relative overflow-hidden backdrop-blur-sm">
-              {/* Background gradient */}
-              <div 
-                className="absolute inset-0 opacity-40"
-                style={{
-                  background: `linear-gradient(135deg, 
-                    rgba(255, 214, 107, 0.05) 0%, 
-                    transparent 70%
-                  )`
-                }}
-              />
-              
-              <div className="relative z-10">
-                <p className="text-lg text-main font-medium mb-2">
-                  The difference is clear:
-                </p>
-                <p className="text-muted">
-                  While others focus on digital art, we're building the future of 
-                  <span className="text-gold font-semibold"> real-world ownership</span>
-                </p>
-              </div>
-            </div>
           </motion.div>
         </div>
       </div>

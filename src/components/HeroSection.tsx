@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Shield, Zap, Users } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function HeroSection() {
   const [isVideoHovered, setIsVideoHovered] = useState(false);
@@ -14,7 +15,7 @@ export default function HeroSection() {
       y: 0,
       transition: { 
         duration: 0.8, 
-        ease: "easeOut",
+        ease: [0.4, 0, 0.2, 1] as const,
         staggerChildren: 0.2 
       } 
     }
@@ -25,27 +26,17 @@ export default function HeroSection() {
     visible: { 
       opacity: 1, 
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
-  };
-
-  const featureVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { duration: 0.5, ease: "easeOut" }
+      transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }
     }
   };
 
   return (
     <section className="relative overflow-hidden">
-      {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-bg-main via-bg-main to-bg-surface" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,214,107,0.05),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(107,239,165,0.03),transparent_50%)]" />
       
-      {/* Grid Pattern Overlay */}
+      {/* glass effect --- overlay div here*/}
       <div 
         className="absolute inset-0 opacity-[0.015]"
         style={{
@@ -55,7 +46,7 @@ export default function HeroSection() {
         }}
       />
 
-      <div className="relative container mx-auto px-6 pt-20 pb-32">
+      <div className="relative container mx-auto px-6 py-14">
         <motion.div 
           className="max-w-5xl mx-auto text-center"
           variants={heroVariants}
@@ -64,8 +55,10 @@ export default function HeroSection() {
         >
           {/* Hero Badge */}
           <motion.div 
-            className="inline-flex items-center gap-2 px-4 py-2 mb-8 bg-surface border border-main rounded-full text-sm text-muted"
+            className="inline-flex items-center gap-2 px-4 py-2 mb-4 bg-surface border border-main rounded-full text-sm text-muted cursor-pointer"
             variants={childVariants}
+            whileHover={{ scale: 1.05, borderColor: 'var(--accent-gold)' }}
+            transition={{ duration: 0.2 }}
           >
             <div className="w-2 h-2 bg-gold rounded-full animate-pulse" />
             Built on Camp Network 🏕️
@@ -73,21 +66,45 @@ export default function HeroSection() {
 
           {/* Main Heading */}
           <motion.h1 
-            className="text-white text-5xl md:text-7xl font-clash mb-6 bg-gradient-to-br from-text-main via-text-main to-text-muted bg-clip-text text-transparent leading-tight"
+            className="text-5xl md:text-7xl font-clash bg-gradient-to-br from-text-main via-text-main to-text-muted bg-clip-text text-transparent leading-tight relative"
             variants={childVariants}
           >
-            Own it.{' '}
-            <span className="text-gold">
-            Prove it. {' '}
-            </span>
-            <span className="text-white" style={{ textShadow: '0 0 20px var(--accent-gold), 0 0 40px var(--accent-gold)' }}>
-              Build it.
+            {/* Animated Glass Effect Overlay */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `linear-gradient(90deg, 
+                  transparent 0%, 
+                  transparent 20%, 
+                  rgba(255, 255, 255, 0.3) 40%, 
+                  rgba(255, 255, 255, 0.6) 50%, 
+                  rgba(255, 255, 255, 0.5) 60%, 
+                  transparent 80%, 
+                  transparent 100%
+                )`,
+                backgroundSize: '200% 100%',
+                animation: 'glass-sweep 6s ease-in-out infinite',
+                mixBlendMode: 'overlay',
+                maskImage: 'linear-gradient(to right, transparent, black, transparent)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black, transparent)'
+              }}
+            />
+            
+            {/* Original Text Content */}
+            <span className="relative z-10 text-white">
+              Own it.{' '}
+              <span className="text-gold">
+                Prove it.{' '}
+              </span>
+              <span className="text-white" style={{ textShadow: '0 0 20px var(--accent-gold), 0 0 40px var(--accent-gold)' }}>
+                Build it.
+              </span>
             </span>
           </motion.h1>
 
           {/* Subheading */}
           <motion.p 
-            className="text-xl md:text-2xl text-muted mb-4 max-w-3xl mx-auto leading-relaxed"
+            className="text-xl md:text-2xl text-muted max-w-3xl mx-auto leading-relaxed"
             variants={childVariants}
           >
             Build a tamperproof trail for your real world assets.
@@ -105,14 +122,16 @@ export default function HeroSection() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
             variants={childVariants}
           >
-            <motion.button
-              className="btn-primary text-lg px-8 py-4 group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Get Started
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
+            <Link href="/register">
+              <motion.button
+                className="btn-primary text-lg px-8 py-4 group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Register Item
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
 
             <motion.button
               className="btn-secondary text-lg px-8 py-4 group relative"
@@ -126,47 +145,6 @@ export default function HeroSection() {
             </motion.button>
           </motion.div>
 
-          {/* Feature Highlights */}
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
-            variants={heroVariants}
-          >
-            <motion.div 
-              className="card-base text-center p-6 group hover:border-gold transition-all duration-300"
-              variants={featureVariants}
-              whileHover={{ y: -8 }}
-            >
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-surface flex items-center justify-center group-hover:bg-gold/10 transition-colors">
-                <Shield className="w-6 h-6 text-gold" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-main">Tamperproof</h3>
-              <p className="text-sm text-muted">Immutable records powered by blockchain technology</p>
-            </motion.div>
-
-            <motion.div 
-              className="card-base text-center p-6 group hover:border-green transition-all duration-300"
-              variants={featureVariants}
-              whileHover={{ y: -8 }}
-            >
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-surface flex items-center justify-center group-hover:bg-green/10 transition-colors">
-                <Zap className="w-6 h-6 text-green" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-main">Lightning Fast</h3>
-              <p className="text-sm text-muted">Register and verify assets in seconds, not days</p>
-            </motion.div>
-
-            <motion.div 
-              className="card-base text-center p-6 group hover:border-blue transition-all duration-300"
-              variants={featureVariants}
-              whileHover={{ y: -8 }}
-            >
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-surface flex items-center justify-center group-hover:bg-blue/10 transition-colors">
-                <Users className="w-6 h-6 text-blue" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-main">Co-ownership</h3>
-              <p className="text-sm text-muted">Share ownership and trade assets seamlessly</p>
-            </motion.div>
-          </motion.div>
         </motion.div>
 
         {/* Floating Elements */}
@@ -179,7 +157,7 @@ export default function HeroSection() {
           transition={{
             duration: 4,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: [0.4, 0, 0.6, 1] as const
           }}
         />
         <motion.div
@@ -191,7 +169,7 @@ export default function HeroSection() {
           transition={{
             duration: 6,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: [0.4, 0, 0.6, 1] as const
           }}
         />
       </div>
