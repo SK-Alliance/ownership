@@ -262,8 +262,8 @@ async function mockAddCoOwner(request: AddCoOwnerRequest) {
   };
 }
 
-async function mockRemoveCoOwner(_itemId: string, _walletAddress: string) {
+async function mockRemoveCoOwner(itemId: string, walletAddress: string) {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  return { success: true };
+  return { success: true, itemId, removedAddress: walletAddress };
 }

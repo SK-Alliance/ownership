@@ -12,7 +12,7 @@ export default function Navbar() {
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const [mounted, setMounted] = useState(false);
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
 
   useEffect(() => {
     setMounted(true);

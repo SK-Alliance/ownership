@@ -16,10 +16,9 @@ import {
   Trash2, 
   AlertTriangle,
   Edit3,
-  Eye,
-  EyeOff,
   Calendar,
-  BarChart3
+  BarChart3,
+  LucideIcon
 } from 'lucide-react';
 
 interface PrivacySettings {
@@ -38,7 +37,7 @@ interface ProfileData {
 }
 
 export default function Profile() {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
@@ -73,7 +72,7 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const handlePrivacyChange = (field: keyof PrivacySettings, value: any) => {
+  const handlePrivacyChange = (field: keyof PrivacySettings, value: boolean | number) => {
     setProfileData(prev => ({
       ...prev,
       privacy: {
@@ -100,7 +99,7 @@ export default function Profile() {
   };
 
   const StatCard = ({ icon: Icon, label, value, color = 'text-main' }: {
-    icon: any;
+    icon: LucideIcon;
     label: string;
     value: string | number;
     color?: string;

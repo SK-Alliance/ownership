@@ -30,7 +30,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
     >
       <select
         value={settings.theme}
-        onChange={(e) => onSettingsChange({ theme: e.target.value as any })}
+        onChange={(e) => onSettingsChange({ theme: e.target.value as 'light' | 'dark' | 'system' })}
         className="px-3 py-2 rounded-lg bg-main/10 border border-main/20 text-main focus:outline-none focus:border-main/40"
       >
         <option value="light">Light</option>
