@@ -3,16 +3,22 @@
 import { useState, useEffect } from 'react';
 import { Shield, Menu, X, User, Settings } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
+import { useWalletConnection } from '@/hooks/useWalletConnection';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const [mounted, setMounted] = useState(false);
-  const { isConnected } = useAccount();
+  const { 
+    user, 
+    isAuthenticated, 
+    isInitializing, 
+    error,
+    isConnected 
+  } = useWalletConnection();
 
   useEffect(() => {
     setMounted(true);
@@ -102,6 +108,36 @@ export default function Navbar() {
 
               {/* Desktop - Connect Wallet Button or Avatar Dropdown */}
               <div className="hidden md:flex items-center gap-3">
+                {/* User Stats - Show when authenticated */}
+                {isAuthenticated && user && (
+                  <div className="flex items-center gap-2 mr-2">
+                    <div className="px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20">
+                      <span className="text-gold font-medium text-sm">
+                        {user.xp_points} XP
+                      </span>
+                    </div>
+                    <div className="px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+                      <span className="text-green-400 font-medium text-sm">
+                        {user.monthly_credits} Credits
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading State */}
+                {isInitializing && (
+                  <div className="flex items-center gap-2 mr-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                    <span className="text-sm text-muted">Loading...</span>
+                  </div>
+                )}
+
+                {/* Error State */}
+                {error && (
+                  <div className="px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 mr-2">
+                    <span className="text-red-400 text-sm">Error</span>
+                  </div>
+                )}
                 <ConnectButton.Custom>
                   {({
                     account,
@@ -249,6 +285,22 @@ export default function Navbar() {
                           }}
                         >
                           <div className="py-2">
+                            {/* User Info Header */}
+                            {user && (
+                              <div className="px-4 py-3 border-b border-main/10">
+                                <div className="text-sm text-main font-medium">
+                                  {user.display_name || 'Anonymous'}
+                                </div>
+                                <div className="text-xs text-muted mt-1">
+                                  {user.wallet_address.slice(0, 6)}...{user.wallet_address.slice(-4)}
+                                </div>
+                                <div className="flex gap-3 mt-2">
+                                  <span className="text-xs text-gold">{user.xp_points} XP</span>
+                                  <span className="text-xs text-green-400">{user.monthly_credits} Credits</span>
+                                </div>
+                              </div>
+                            )}
+                            
                             <Link
                               href="/profile"
                               onClick={() => setIsAvatarOpen(false)}
@@ -337,6 +389,41 @@ export default function Navbar() {
 
                   {/* Mobile Connect Button */}
                   <div className="pt-4 border-t border-main/10">
+                    {/* Mobile User Stats */}
+                    {isAuthenticated && user && (
+                      <div className="mb-4 p-3 rounded-lg bg-main/5 border border-main/10">
+                        <div className="text-sm text-main font-medium mb-2">
+                          {user.display_name || 'Anonymous'}
+                        </div>
+                        <div className="text-xs text-muted mb-2">
+                          {user.wallet_address.slice(0, 10)}...{user.wallet_address.slice(-8)}
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gold font-medium">{user.xp_points} XP</span>
+                          <span className="text-sm text-green-400 font-medium">{user.monthly_credits} Credits</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Mobile Profile Links - Show only when authenticated */}
+                    {isAuthenticated && (
+                      <div className="mb-4 space-y-2">
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block text-muted hover:text-main transition-colors duration-300 font-medium py-2"
+                        >
+                          My Profile
+                        </Link>
+                        <Link
+                          href="/settings"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block text-muted hover:text-main transition-colors duration-300 font-medium py-2"
+                        >
+                          Settings
+                        </Link>
+                      </div>
+                    )}
                     <ConnectButton.Custom>
                       {({
                         account,
