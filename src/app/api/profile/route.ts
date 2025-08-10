@@ -1,3 +1,5 @@
+//this api helps you to create a user profile and save its info
+
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
@@ -17,6 +19,9 @@ export async function POST(request: NextRequest) {
     if (!walletAddress) {
       return NextResponse.json({ error: 'Wallet address is required' }, { status: 400 });
     }
+
+    // Log the wallet address for debugging
+    console.log('Attempting to save profile with wallet address:', walletAddress);
 
     // Validate email format if provided
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -49,7 +54,7 @@ export async function POST(request: NextRequest) {
         username: username?.toLowerCase() || null,
         full_name: fullName || null,
         email: email?.toLowerCase() || null,
-        total_xp: 0, // Initialize with 0 XP for new profiles
+        xp_points: 0, // Initialize with 0 XP for new profiles
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'wallet_address'
@@ -66,6 +71,7 @@ export async function POST(request: NextRequest) {
       fullName: profile.full_name || '',
       email: profile.email || '',
       walletAddress: profile.wallet_address,
+      xpPoints: profile.xp_points || 0,
     });
 
   } catch (error) {

@@ -1,10 +1,38 @@
 import { useEffect, useRef } from 'react';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAuthState, useConnect } from '@campnetwork/origin/react';
 import { useWalletAuth } from '@/lib/wallet-auth';
 
 export const useWalletConnection = () => {
-  const { address, isConnected, isConnecting } = useAccount();
-  const { disconnect } = useDisconnect();
+  const { authenticated, loading, auth } = useAuthState();
+  const { disconnect: campDisconnect } = useConnect();
+  
+  // Try to get real wallet address from multiple sources
+  const getWalletAddress = () => {
+    if (!authenticated) return undefined;
+    
+    // Method 1: Try auth object
+    if (auth?.user?.wallet_address) {
+      return auth.user.wallet_address;
+    }
+    
+    // Method 2: Try window.ethereum if available
+    if (typeof window !== 'undefined' && window.ethereum?.selectedAddress) {
+      return window.ethereum.selectedAddress;
+    }
+    
+    // Method 3: Try provider
+    if (auth?.provider?.accounts?.[0]) {
+      return auth.provider.accounts[0];
+    }
+    
+    // Fallback: Generate a demo address for development
+    const demoAddress = `0x${Math.random().toString(16).substr(2, 40)}`;
+    return demoAddress;
+  };
+  
+  const address = getWalletAddress();
+  const isConnected = authenticated;
+  const isConnecting = loading;
   const { 
     user, 
     isLoading, 
@@ -54,7 +82,7 @@ export const useWalletConnection = () => {
   // Manual disconnect function
   const handleDisconnect = async () => {
     await handleWalletDisconnection();
-    disconnect();
+    campDisconnect();
   };
 
   return {

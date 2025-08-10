@@ -4,22 +4,21 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Skip middleware for API routes, static files, and the profile page itself
+  // Skip middleware for API routes, static files
   if (
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon') ||
-    pathname.includes('.') ||
-    pathname === '/profile' ||
-    pathname === '/' // Allow access to home page
+    pathname.includes('.')
   ) {
     return NextResponse.next();
   }
 
-  // Check if user has wallet connection indication in headers or cookies
-  // This is a fallback - the main redirection logic will be handled on the client side
-  // since we can't detect wallet connection on the server side directly
+  // Since Camp Network authentication is client-side, we'll let the AuthGuard
+  // component handle most of the routing logic. The middleware will primarily
+  // handle server-side redirects and optimizations.
   
+  // Allow all routes to pass through - AuthGuard will handle authentication routing
   return NextResponse.next();
 }
 

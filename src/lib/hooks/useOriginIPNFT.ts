@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAuthState } from '@campnetwork/origin/react';
 import { useRegistrationStore } from '@/lib/stores/registration-store';
 
 interface IPMetadata {
@@ -26,7 +26,10 @@ export function useOriginIPNFT(): UseOriginIPNFTReturn {
   const [error, setError] = useState<string | null>(null);
   const [tokenId, setTokenId] = useState<string | null>(null);
   
-  const { address, isConnected } = useAccount();
+  const { authenticated } = useAuthState();
+  // TODO: Get actual address from Camp Network SDK
+  const address = authenticated ? 'camp-connected-user' : undefined;
+  const isConnected = authenticated;
   const { itemDetails, proofFiles } = useRegistrationStore();
 
   const createIPNFT = async () => {

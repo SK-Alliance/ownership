@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
-import { useAccount } from 'wagmi';
+import { useAuthState } from '@campnetwork/origin/react';
 import DashboardHeader from './DashboardHeader';
 import ItemCard from './ItemCard';
 import EmptyState from './EmptyState';
@@ -16,7 +16,7 @@ type FilterType = 'all' | 'verified' | 'pending' | 'rejected';
 type SortType = 'newest' | 'oldest' | 'xp-high' | 'xp-low';
 
 export default function Dashboard() {
-  const { isConnected } = useAccount();
+  const { authenticated } = useAuthState();
   const { tokens: ipnftTokens, isLoading: isLoadingTokens, error: tokensError, refetch } = useUserIPNFTs();
   
   const [filter, setFilter] = useState<FilterType>('all');
@@ -151,7 +151,7 @@ export default function Dashboard() {
             </div>
 
             {/* IP-NFT Status Display */}
-            {!isConnected && (
+            {!authenticated && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -183,7 +183,7 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {isConnected && ipnftTokens.length > 0 && (
+            {authenticated && ipnftTokens.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}

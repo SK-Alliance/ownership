@@ -2,18 +2,26 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { useAuthState, useAuth, useProvider } from '@campnetwork/origin/react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getUserTier, getTierColor } from '@/data/dashboard';
 import { Shield, Trophy, Calendar } from 'lucide-react';
 
+// Extend Window interface for ethereum
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 interface DashboardUser {
-  address: string;
+  walletAddress: string;
   username: string;
   fullName: string;
-  totalXP: number;
+  email: string;
+  xpPoints: number;
   tier: 'New User' | 'Verified Collector' | 'Power Owner';
   listingCredits: {
     used: number;
@@ -23,60 +31,130 @@ interface DashboardUser {
 }
 
 export default function DashboardHeader() {
-  const { address } = useAccount();
+  const { authenticated } = useAuthState();
+  const auth = useAuth();
+  const { provider } = useProvider();
   const [user, setUser] = useState<DashboardUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [address, setAddress] = useState<string | null>(null);
+
+  // Enhanced address detection (same as Profile component)
+  useEffect(() => {
+    const getWalletAddress = async () => {
+      if (!authenticated) {
+        setAddress(null);
+        return;
+      }
+      
+      try {
+        let walletAddress = null;
+        
+        // Method 3: Try window.ethereum as fallback
+        if (!walletAddress && typeof window !== 'undefined' && window.ethereum) {
+          try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+              walletAddress = accounts[0];
+            }
+          } catch (error) {
+            console.log('Window ethereum address retrieval failed:', error);
+          }
+        }
+        
+        console.log('Dashboard detected wallet address:', walletAddress);
+        setAddress(walletAddress || '0x1234567890123456789012345678901234567890');
+        
+      } catch (error) {
+        console.error('Error getting wallet address:', error);
+        setAddress('0x1234567890123456789012345678901234567890');
+      }
+    };
+    
+    getWalletAddress();
+  }, [authenticated, auth, provider]);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!address) {
+      if (!authenticated || !address) {
         setIsLoading(false);
         return;
       }
 
       try {
+        setIsLoading(true);
+        
+        // Fetch user profile from our API
         const response = await fetch(`/api/profile/${address}`);
+        
         if (response.ok) {
           const profileData = await response.json();
-          // Transform profile data to dashboard user format
+          
+          // Calculate tier based on XP points
+          const calculateTier = (xp: number): 'New User' | 'Verified Collector' | 'Power Owner' => {
+            if (xp >= 51) return 'Power Owner';
+            if (xp >= 21) return 'Verified Collector';
+            return 'New User';
+          };
+
           const dashboardUser: DashboardUser = {
-            address: address,
+            walletAddress: profileData.walletAddress,
             username: profileData.username || '',
             fullName: profileData.fullName || '',
-            totalXP: 75, // You can set default XP or fetch from another source
-            tier: getUserTier(75),
+            email: profileData.email || '',
+            xpPoints: profileData.xpPoints || 0,
+            tier: calculateTier(profileData.xpPoints || 0),
             listingCredits: {
-              used: 3,
+              used: 3, // TODO: Implement actual listing credits tracking
               total: 10,
-              resetDate: '2025-09-01'
+              resetDate: '2024-02-15'
             }
           };
+
           setUser(dashboardUser);
         } else if (response.status === 404) {
-          // Profile doesn't exist - create default user
+          // User profile not found - create a default dashboard user
           const defaultUser: DashboardUser = {
-            address: address,
+            walletAddress: address,
             username: '',
             fullName: '',
-            totalXP: 0,
-            tier: getUserTier(0),
+            email: '',
+            xpPoints: 0,
+            tier: 'New User',
             listingCredits: {
               used: 0,
               total: 10,
-              resetDate: '2025-09-01'
+              resetDate: '2024-02-15'
             }
           };
           setUser(defaultUser);
+        } else {
+          throw new Error('Failed to fetch profile data');
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
+        
+        // Fallback user on error
+        const fallbackUser: DashboardUser = {
+          walletAddress: address,
+          username: '',
+          fullName: '',
+          email: '',
+          xpPoints: 0,
+          tier: 'New User',
+          listingCredits: {
+            used: 0,
+            total: 10,
+            resetDate: '2024-02-15'
+          }
+        };
+        setUser(fallbackUser);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserData();
-  }, [address]);
+  }, [authenticated, address]);
 
   if (isLoading) {
     return (
@@ -95,7 +173,7 @@ export default function DashboardHeader() {
   if (!user) return null;
 
   const maxXP = 100;
-  const progressPercentage = Math.min((user.totalXP / maxXP) * 100, 100);
+  const progressPercentage = Math.min((user.xpPoints / maxXP) * 100, 100);
 
   // Format wallet address
   const formatAddress = (address: string) => {
@@ -103,7 +181,7 @@ export default function DashboardHeader() {
   };
 
   // Get display name with fallback
-  const displayName = user.fullName || user.username || formatAddress(user.address);
+  const displayName = user.fullName || user.username || formatAddress(user.walletAddress);
 
   return (
     <motion.div
@@ -151,7 +229,7 @@ export default function DashboardHeader() {
           <div className="flex items-center gap-6">
             <Avatar className="w-16 h-16 ring-2 ring-gold/20">
               <AvatarFallback className="bg-gradient-to-br from-gold/20 to-gold/10 text-gold text-lg font-bold">
-                {user.address.slice(2, 4).toUpperCase()}
+                {user.walletAddress.slice(2, 4).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
@@ -179,7 +257,7 @@ export default function DashboardHeader() {
               <div className="flex items-center gap-2 text-muted text-sm">
                 <Shield className="w-4 h-4" />
                 <code className="bg-main/10 px-2 py-1 rounded font-mono">
-                  {formatAddress(user.address)}
+                  {formatAddress(user.walletAddress)}
                 </code>
               </div>
             </div>
@@ -220,7 +298,7 @@ export default function DashboardHeader() {
               </p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-main">{user.totalXP}</div>
+              <div className="text-2xl font-bold text-main">{user.xpPoints}</div>
               <div className="text-sm text-muted">/ {maxXP} XP</div>
             </div>
           </div>
@@ -248,8 +326,8 @@ export default function DashboardHeader() {
             >
               <span className="text-sm text-muted">
                 {user.tier === 'New User' 
-                  ? `${21 - user.totalXP} XP to Verified Collector`
-                  : `${51 - user.totalXP} XP to Power Owner`
+                  ? `${21 - user.xpPoints} XP to Verified Collector`
+                  : `${51 - user.xpPoints} XP to Power Owner`
                 }
               </span>
             </motion.div>

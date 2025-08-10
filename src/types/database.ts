@@ -17,7 +17,7 @@ export type Database = {
           username: string | null
           full_name: string | null
           email: string | null
-          total_xp: number
+          xp_points: number
           created_at: string
           updated_at: string
         }
@@ -27,7 +27,7 @@ export type Database = {
           username?: string | null
           full_name?: string | null
           email?: string | null
-          total_xp?: number
+          xp_points?: number
           created_at?: string
           updated_at?: string
         }
@@ -37,7 +37,7 @@ export type Database = {
           username?: string | null
           full_name?: string | null
           email?: string | null
-          total_xp?: number
+          xp_points?: number
           created_at?: string
           updated_at?: string
         }

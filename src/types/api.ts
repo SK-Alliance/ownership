@@ -5,6 +5,7 @@ export interface RegisterItemRequest {
   brand: string;
   serialNumber: string;
   est_value?: number;
+  itemImage: File;
   billFile?: File;
   idFile?: File;
 }

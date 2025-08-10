@@ -1,11 +1,15 @@
 'use client';
 
-import { useAccount } from 'wagmi';
+import { useAuthState } from '@campnetwork/origin/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 export function useWalletRedirect() {
-  const { isConnected, address, isConnecting } = useAccount();
+  const { authenticated, loading } = useAuthState();
+  // TODO: Get actual address from Camp Network SDK  
+  const address = authenticated ? 'camp-connected-user' : undefined;
+  const isConnected = authenticated;
+  const isConnecting = loading;
   const router = useRouter();
   const pathname = usePathname();
   const previousConnected = useRef(false);

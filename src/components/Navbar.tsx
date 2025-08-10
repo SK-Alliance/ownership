@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { Shield, Menu, X, User, Settings } from 'lucide-react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
+import { CampModal, useAuthState } from '@campnetwork/origin/react';
 import Link from 'next/link';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isConnected } = useAccount();
+  const { authenticated } = useAuthState();
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard' },
@@ -88,10 +87,13 @@ export default function Navbar() {
 
               {/* Desktop Right Side - Connect Button + User Icons */}
               <div className="hidden md:flex items-center gap-4">
-                <ConnectButton />
-                
+                {/* Camp Modal with custom button styling */}
+                <div className="camp-modal-container">
+                  <CampModal />
+                </div>
+
                 {/* User Links - Only show when wallet is connected */}
-                {isConnected && (
+                {authenticated && (
                   <div className="flex items-center gap-2 ml-2">
                     {userLinks.map((link, index) => {
                       const IconComponent = link.icon;
@@ -163,9 +165,9 @@ export default function Navbar() {
                       {link.name}
                     </Link>
                   ))}
-                  
+
                   {/* User Links - Only show when wallet is connected */}
-                  {isConnected && userLinks.map((link, index) => {
+                  {authenticated && userLinks.map((link, index) => {
                     const IconComponent = link.icon;
                     return (
                       <Link
@@ -179,9 +181,11 @@ export default function Navbar() {
                       </Link>
                     );
                   })}
-                  
+
                   <div className="pt-4 border-t border-white/10">
-                    <ConnectButton />
+                    <div className="camp-modal-container">
+                      <CampModal />
+                    </div>
                   </div>
                 </div>
               </div>

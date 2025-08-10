@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAccount } from 'wagmi';
+import { useAuthState } from '@campnetwork/origin/react';
 
 interface IPNFTToken {
   tokenId: string;
@@ -30,7 +30,10 @@ export function useUserIPNFTs(): UseUserIPNFTsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { address, isConnected } = useAccount();
+  const { authenticated } = useAuthState();
+  // TODO: Get actual address from Camp Network SDK
+  const address = authenticated ? 'camp-connected-user' : undefined;
+  const isConnected = authenticated;
 
   const fetchTokens = useCallback(async () => {
     if (!isConnected || !address) {
