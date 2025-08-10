@@ -4,6 +4,8 @@ import { Providers } from "./providers";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { HydrateUserStore } from "@/components/HydrateUserStore";
+import { WalletRedirectHandler } from "@/components/WalletRedirectHandler";
 import '@rainbow-me/rainbowkit/styles.css';
 
 
@@ -49,6 +51,8 @@ export default function RootLayout({
         className={`${dmSans.variable} ${inter.variable} font-dm-sans antialiased bg-main text-main overflow-x-hidden`}
       >
         <Providers>
+          <HydrateUserStore />
+          <WalletRedirectHandler />
           <Navbar />
           {children}
           <Footer />

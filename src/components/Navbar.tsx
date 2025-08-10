@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Shield, Menu, X } from 'lucide-react';
+import { Shield, Menu, X, User, Settings } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-
-
+import { useAccount } from 'wagmi';
+import Link from 'next/link';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isConnected } = useAccount();
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard' },
@@ -15,25 +16,28 @@ export default function Navbar() {
     { name: 'About', href: '/about' }
   ];
 
+  const userLinks = [
+    { name: 'Profile', href: '/profile', icon: User },
+    { name: 'Settings', href: '/settings', icon: Settings }
+  ];
+
   return (
     <nav className="relative z-50">
-
-        {/* main container begins here */}
       <div className="container mx-auto px-6 py-4">
         <div className="max-w-4xl mx-auto">
-          <div 
-            className="relative rounded-full border border-main/20 overflow-hidden backdrop-blur-xl"
+          <div
+            className="relative rounded-full border border-white/20 overflow-hidden backdrop-blur-xl"
             style={{
               background: `linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.08) 0%, 
-                rgba(255, 255, 255, 0.03) 30%, 
-                rgba(255, 255, 255, 0.01) 70%,
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 30%, 
+                rgba(255, 255, 255, 0.02) 70%,
                 transparent 100%
               )`
             }}
           >
-            {/* Glass morphism shown here */}
-            <div 
+            {/* Glass morphism overlay */}
+            <div
               className="absolute inset-0"
               style={{
                 background: `linear-gradient(135deg, 
@@ -45,13 +49,13 @@ export default function Navbar() {
               }}
             />
 
-            {/* highlighting the edges for beautyy */}
-            <div 
+            {/* Top highlight edge */}
+            <div
               className="absolute top-0 left-4 right-4 h-px"
               style={{
                 background: `linear-gradient(90deg, 
                   transparent, 
-                  rgba(255, 255, 255, 0.2), 
+                  rgba(255, 255, 255, 0.3), 
                   transparent
                 )`
               }}
@@ -60,158 +64,57 @@ export default function Navbar() {
             <div className="relative z-10 flex items-center justify-between px-6 py-4">
               {/* Brand Logo */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-gold to-gold/80 flex items-center justify-center shadow-glow-gold">
-                  <Shield className="w-5 h-5 text-bg-main" />
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                  <Shield className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-clash text-main">Auctor</h1>
+                  <h1 className="text-xl font-bold text-white">Auctor</h1>
                 </div>
               </div>
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center gap-8">
                 {navLinks.map((link, index) => (
-                  <a
+                  <Link
                     key={index}
                     href={link.href}
-                    className="text-muted hover:text-main hover:text-gold transition-colors duration-300 font-medium text-sm relative group"
+                    className="text-white/80 hover:text-white transition-colors font-medium text-sm relative group"
                   >
                     {link.name}
-                    <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold transition-all duration-300 group-hover:w-full" />
-                  </a>
+                    <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-500 transition-all duration-300 group-hover:w-full" />
+                  </Link>
                 ))}
               </div>
 
-              {/* Desktop - Connect Wallet Button only */}
-              <div className="hidden md:flex items-center">
-                <ConnectButton.Custom>
-                  {({
-                    account,
-                    chain,
-                    openAccountModal,
-                    openChainModal,
-                    openConnectModal,
-                    authenticationStatus,
-                    mounted,
-                  }) => {
-                    // Note: If your app doesn't use authentication, you
-                    // can remove all 'authenticationStatus' checks
-                    const ready = mounted && authenticationStatus !== 'loading';
-                    const connected =
-                      ready &&
-                      account &&
-                      chain &&
-                      (!authenticationStatus ||
-                        authenticationStatus === 'authenticated');
-
-                    return (
-                      <div
-                        {...(!ready && {
-                          'aria-hidden': true,
-                          'style': {
-                            opacity: 0,
-                            pointerEvents: 'none',
-                            userSelect: 'none',
-                          },
-                        })}
-                      >
-                        {(() => {
-                          if (!connected) {
-                            return (
-                              <button
-                                onClick={openConnectModal}
-                                className="relative px-6 py-2.5 rounded-full border border-gold/30 overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-glow-gold"
-                                style={{
-                                  background: `linear-gradient(135deg, 
-                                    rgba(255, 214, 107, 0.1) 0%, 
-                                    rgba(255, 214, 107, 0.05) 50%, 
-                                    transparent 100%
-                                  )`
-                                }}
-                              >
-                                {/* Button glass overlay */}
-                                <div 
-                                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                  style={{
-                                    background: `linear-gradient(135deg, 
-                                      rgba(255, 214, 107, 0.15) 0%, 
-                                      rgba(255, 214, 107, 0.08) 50%, 
-                                      transparent 100%
-                                    )`
-                                  }}
-                                />
-                                
-                                <div className="relative z-10 flex items-center gap-2">
-                                  <span className="text-gold font-medium text-sm">Connect Wallet</span>
-                                </div>
-
-                                {/* Button highlight edge */}
-                                <div 
-                                  className="absolute top-0 left-2 right-2 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                  style={{
-                                    background: `linear-gradient(90deg, 
-                                      transparent, 
-                                      rgba(255, 214, 107, 0.4), 
-                                      transparent
-                                    )`
-                                  }}
-                                />
-                              </button>
-                            );
-                          }
-
-                          if (chain.unsupported) {
-                            return (
-                              <button 
-                                onClick={openChainModal}
-                                className="relative px-4 py-2 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
-                              >
-                                Wrong network
-                              </button>
-                            );
-                          }
-
-                          return (
-                            <button 
-                              onClick={openAccountModal}
-                              className="relative px-4 py-2 rounded-full border border-gold/30 overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-glow-gold"
-                              style={{
-                                background: `linear-gradient(135deg, 
-                                  rgba(255, 214, 107, 0.1) 0%, 
-                                  rgba(255, 214, 107, 0.05) 50%, 
-                                  transparent 100%
-                                )`
-                              }}
-                            >
-                              <div className="relative z-10 flex items-center gap-2">
-                                <span className="text-gold font-medium text-sm">
-                                  {account.displayName}
-                                </span>
-                                <span className="text-gold/70 text-xs">
-                                  {account.displayBalance}
-                                </span>
-                              </div>
-                            </button>
-                          );
-                        })()}
-                      </div>
-                    );
-                  }}
-                </ConnectButton.Custom>
+              {/* Desktop Right Side - Connect Button + User Icons */}
+              <div className="hidden md:flex items-center gap-4">
+                <ConnectButton />
+                
+                {/* User Links - Only show when wallet is connected */}
+                {isConnected && (
+                  <div className="flex items-center gap-2 ml-2">
+                    {userLinks.map((link, index) => {
+                      const IconComponent = link.icon;
+                      return (
+                        <Link
+                          key={`user-${index}`}
+                          href={link.href}
+                          className="text-white/80 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10 relative group"
+                          title={link.name}
+                        >
+                          <IconComponent className="w-5 h-5" />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Mobile - Menu Button only */}
+              {/* Mobile Menu Button */}
               <div className="md:hidden">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="w-10 h-10 rounded-full border border-main/20 flex items-center justify-center text-muted hover:text-main transition-colors duration-300"
-                  style={{
-                    background: `linear-gradient(135deg, 
-                      rgba(255, 255, 255, 0.05) 0%, 
-                      rgba(255, 255, 255, 0.02) 50%, 
-                      transparent 100%
-                    )`
-                  }}
+                  className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors backdrop-blur-sm bg-white/10"
                 >
                   {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
@@ -221,23 +124,23 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="container mx-auto px-6">
-            <div className="max-w-7xl mx-auto">
-              <div 
-                className="mt-2 rounded-card border border-main/20 overflow-hidden backdrop-blur-xl"
+            <div className="max-w-4xl mx-auto">
+              <div
+                className="mt-2 rounded-xl border border-white/20 overflow-hidden backdrop-blur-xl"
                 style={{
                   background: `linear-gradient(135deg, 
-                    rgba(255, 255, 255, 0.06) 0%, 
-                    rgba(255, 255, 255, 0.02) 50%, 
+                    rgba(255, 255, 255, 0.1) 0%, 
+                    rgba(255, 255, 255, 0.05) 50%, 
                     transparent 100%
                   )`
                 }}
               >
                 {/* Glass morphism overlay */}
-                <div 
+                <div
                   className="absolute inset-0"
                   style={{
                     background: `linear-gradient(135deg, 
@@ -251,111 +154,40 @@ export default function Navbar() {
 
                 <div className="relative z-10 p-6 space-y-4">
                   {navLinks.map((link, index) => (
-                    <a
+                    <Link
                       key={index}
                       href={link.href}
                       onClick={() => setIsMenuOpen(false)}
-                      className="block text-muted hover:text-main transition-colors duration-300 font-medium py-2"
+                      className="block text-white/80 hover:text-white transition-colors font-medium py-2"
                     >
                       {link.name}
-                    </a>
+                    </Link>
                   ))}
                   
-                  {/* Mobile Connect Button */}
-                  <div className="pt-4 border-t border-main/10">
-                    <ConnectButton.Custom>
-                      {({
-                        account,
-                        chain,
-                        openAccountModal,
-                        openChainModal,
-                        openConnectModal,
-                        authenticationStatus,
-                        mounted,
-                      }) => {
-                        const ready = mounted && authenticationStatus !== 'loading';
-                        const connected =
-                          ready &&
-                          account &&
-                          chain &&
-                          (!authenticationStatus ||
-                            authenticationStatus === 'authenticated');
-
-                        return (
-                          <div
-                            {...(!ready && {
-                              'aria-hidden': true,
-                              'style': {
-                                opacity: 0,
-                                pointerEvents: 'none',
-                                userSelect: 'none',
-                              },
-                            })}
-                          >
-                            {(() => {
-                              if (!connected) {
-                                return (
-                                  <button
-                                    onClick={() => {
-                                      openConnectModal();
-                                      setIsMenuOpen(false);
-                                    }}
-                                    className="w-full px-4 py-3 rounded-full border border-gold/30 bg-gold/10 text-gold font-medium text-sm hover:bg-gold/20 transition-colors"
-                                  >
-                                    Connect Wallet
-                                  </button>
-                                );
-                              }
-
-                              if (chain.unsupported) {
-                                return (
-                                  <button 
-                                    onClick={() => {
-                                      openChainModal();
-                                      setIsMenuOpen(false);
-                                    }}
-                                    className="w-full px-4 py-3 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
-                                  >
-                                    Wrong network
-                                  </button>
-                                );
-                              }
-
-                              return (
-                                <button 
-                                  onClick={() => {
-                                    openAccountModal();
-                                    setIsMenuOpen(false);
-                                  }}
-                                  className="w-full px-4 py-3 rounded-full border border-gold/30 bg-gold/10 text-gold font-medium text-sm hover:bg-gold/20 transition-colors"
-                                >
-                                  {account.displayName}
-                                  {account.displayBalance && (
-                                    <span className="block text-xs text-gold/70 mt-1">
-                                      {account.displayBalance}
-                                    </span>
-                                  )}
-                                </button>
-                              );
-                            })()}
-                          </div>
-                        );
-                      }}
-                    </ConnectButton.Custom>
+                  {/* User Links - Only show when wallet is connected */}
+                  {isConnected && userLinks.map((link, index) => {
+                    const IconComponent = link.icon;
+                    return (
+                      <Link
+                        key={`mobile-user-${index}`}
+                        href={link.href}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-3 text-white/80 hover:text-white transition-colors font-medium py-2"
+                      >
+                        <IconComponent className="w-5 h-5" />
+                        {link.name}
+                      </Link>
+                    );
+                  })}
+                  
+                  <div className="pt-4 border-t border-white/10">
+                    <ConnectButton />
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Backdrop for mobile menu */}
-      {isMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-bg-main/20 backdrop-blur-sm -z-10 md:hidden"
-          onClick={() => setIsMenuOpen(false)}
-        />
       )}
     </nav>
   );

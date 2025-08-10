@@ -1,239 +1,325 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { useRegistrationStore } from '@/lib/stores/registration-store';
-import { ArrowLeft, ArrowRight, Zap } from 'lucide-react';
-
-import ItemDetailsStep from './ItemDetailsStep';
-import UploadProofStep from './UploadProofStep';
-import ConfirmAndMintStep from './ConfirmAndMintStep';
-
-const steps = [
-  { number: 1, title: 'Item Details', description: 'Basic information' },
-  { number: 2, title: 'Upload Proof', description: 'Documentation' },
-  { number: 3, title: 'Confirm & Mint', description: 'Final review' }
-];
+import React, { useState } from 'react';
+import { useItemRegistration } from '@/hooks/useItemRegistration';
+import { useWalletConnection } from '@/hooks/useWalletConnection';
+import { RegisterItemRequest } from '@/types/api';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Shield, Upload, CheckCircle, AlertCircle, Star } from 'lucide-react';
 
 export default function RegistrationForm() {
-  const {
-    currentStep,
-    nextStep,
-    prevStep,
-    itemDetails,
-    proofFiles,
-    isLoading,
-    setLoading
-  } = useRegistrationStore();
+  const [formData, setFormData] = useState<RegisterItemRequest>({
+    title: '',
+    category: '',
+    brand: '',
+    serialNumber: '',
+    est_value: 0,
+    billFile: undefined,
+    idFile: undefined,
+  });
 
-  const canProceedFromStep1 = itemDetails.name.trim() !== '' && 
-                               itemDetails.category !== '' && 
-                               itemDetails.value.trim() !== '';
+  const { isLoading, error, success, registerItem, reset } = useItemRegistration();
+  const { isAuthenticated } = useWalletConnection();
 
-  const canProceedFromStep2 = proofFiles.receipt && proofFiles.identification;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isAuthenticated) {
+      return;
+    }
 
-  const getStepComponent = () => {
-    switch (currentStep) {
-      case 1:
-        return <ItemDetailsStep key="step-1" />;
-      case 2:
-        return <UploadProofStep key="step-2" />;
-      case 3:
-        return <ConfirmAndMintStep key="step-3" />;
-      default:
-        return <ItemDetailsStep key="step-1" />;
+    const result = await registerItem(formData);
+    if (result?.success) {
+      // Reset form on success
+      setFormData({
+        title: '',
+        category: '',
+        brand: '',
+        serialNumber: '',
+        est_value: 0,
+        billFile: undefined,
+        idFile: undefined,
+      });
     }
   };
 
-  const handleNext = () => {
-    if (currentStep === 1 && canProceedFromStep1) {
-      nextStep();
-    } else if (currentStep === 2 && canProceedFromStep2) {
-      nextStep();
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'billFile' | 'idFile') => {
+    const file = e.target.files?.[0];
+    setFormData(prev => ({ ...prev, [type]: file }));
   };
-
-  const handleMint = async () => {
-    setLoading(true);
-    
-    // Simulate minting process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Here you would integrate with blockchain
-    console.log('Minting:', { itemDetails, proofFiles });
-    
-    setLoading(false);
-    
-    // Show success or redirect
-    alert('Successfully minted! (This is just a simulation)');
-  };
-
-  const canProceed = () => {
-    switch (currentStep) {
-      case 1:
-        return canProceedFromStep1;
-      case 2:
-        return canProceedFromStep2;
-      case 3:
-        return true;
-      default:
-        return false;
-    }
-  };
-
-  const progress = (currentStep / 3) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bg-main via-bg-main to-bg-surface py-12">
-      <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-main relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,214,107,0.03),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(107,239,165,0.02),transparent_60%)]" />
+      
+      <div className="relative container mx-auto px-6 py-12">
+        <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl md:text-5xl font-clash text-main mb-4">
-              Register Your <span className="text-gold">Item</span>
-            </h1>
-            <p className="text-xl text-muted max-w-2xl mx-auto">
-              Create a tamperproof digital certificate for your valuable assets
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-clash text-main mb-4">Register New Item</h1>
+            <p className="text-muted text-lg max-w-xl mx-auto">
+              Create tamperproof ownership records for your valuable items
             </p>
-          </motion.div>
-
-          {/* Progress Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mb-12"
-          >
-            {/* Step Indicators */}
-            <div className="flex items-center justify-between mb-6">
-              {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
-                        currentStep >= step.number
-                          ? 'bg-gold border-gold text-bg-main'
-                          : 'border-main/30 text-muted'
-                      }`}
-                    >
-                      {step.number}
-                    </div>
-                    <div className="text-center mt-2">
-                      <p className={`text-sm font-medium ${
-                        currentStep >= step.number ? 'text-main' : 'text-muted'
-                      }`}>
-                        {step.title}
-                      </p>
-                      <p className="text-xs text-muted">{step.description}</p>
-                    </div>
-                  </div>
-                  
-                  {index < steps.length - 1 && (
-                    <div className="flex-1 h-0.5 mx-8 mt-[-24px]">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          currentStep > step.number ? 'bg-gold' : 'bg-main/20'
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted">Step {currentStep} of {steps.length}</span>
-                <span className="text-sm text-muted">{Math.round(progress)}% Complete</span>
-              </div>
-              <Progress value={progress} className="h-2" />
-            </div>
-          </motion.div>
-
-          {/* Step Content */}
-          <div className="mb-12">
-            <AnimatePresence mode="wait">
-              {getStepComponent()}
-            </AnimatePresence>
           </div>
 
-          {/* Navigation Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex items-center justify-between max-w-2xl mx-auto"
-          >
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 1}
-              className="flex items-center gap-2 px-6 py-3"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
+          {/* Main Form Card */}
+          <div className="card-base backdrop-blur-xl border border-main/20 relative overflow-hidden">
+            {/* Glass morphism overlay */}
+            <div
+              className="absolute inset-0 opacity-30"
+              style={{
+                background: `linear-gradient(135deg, 
+                  rgba(255, 255, 255, 0.05) 0%, 
+                  rgba(255, 255, 255, 0.02) 50%, 
+                  transparent 100%
+                )`,
+                backdropFilter: 'blur(20px)'
+              }}
+            />
 
-            <div className="flex-1 text-center">
-              <p className="text-xs text-muted">
-                {currentStep === 3 
-                  ? 'Ready to create your certificate' 
-                  : `${2 - (currentStep - 1)} steps remaining`
-                }
-              </p>
+            {/* Top edge highlight */}
+            <div
+              className="absolute top-0 left-4 right-4 h-px"
+              style={{
+                background: `linear-gradient(90deg, 
+                  transparent, 
+                  rgba(255, 214, 107, 0.3), 
+                  transparent
+                )`
+              }}
+            />
+
+            <div className="relative z-10">
+              {!isAuthenticated && (
+                <div className="mb-8 p-6 bg-gradient-to-r from-gold/10 to-orange-500/10 border border-gold/20 text-gold rounded-card">
+                  <div className="flex items-center gap-3 mb-4">
+                    <AlertCircle className="w-5 h-5" />
+                    <p className="font-medium">Wallet Connection Required</p>
+                  </div>
+                  <p className="text-gold/80 mb-4">Connect your wallet to register items and create ownership records</p>
+                  <ConnectButton />
+                </div>
+              )}
+              
+              {success && (
+                <div className="mb-8 p-6 bg-gradient-to-r from-green/10 to-emerald-500/10 border border-green/20 text-green rounded-card">
+                  <div className="flex items-center gap-3 mb-2">
+                    <CheckCircle className="w-5 h-5" />
+                    <p className="font-medium">Registration Successful!</p>
+                  </div>
+                  <p className="text-green/80 mb-4">Your item has been submitted for verification. You will earn 100 XP once approved!</p>
+                  <button
+                    onClick={reset}
+                    className="text-green hover:text-green/80 underline font-medium"
+                  >
+                    Register another item
+                  </button>
+                </div>
+              )}
+
+              {error && (
+                <div className="mb-8 p-6 bg-gradient-to-r from-red/10 to-red-500/10 border border-red/20 text-red rounded-card">
+                  <div className="flex items-center gap-3 mb-2">
+                    <AlertCircle className="w-5 h-5" />
+                    <p className="font-medium">Registration Failed</p>
+                  </div>
+                  <p className="text-red/80 mb-4">{error}</p>
+                  <button
+                    onClick={reset}
+                    className="text-red hover:text-red/80 underline font-medium"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div>
+                  <label className="block text-main font-medium mb-3">
+                    Item Title/Model *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-4 py-3 bg-surface/50 border border-main/20 rounded-button text-main placeholder-muted focus:ring-2 focus:ring-gold focus:border-gold transition-all backdrop-blur-sm"
+                    placeholder="e.g., iPhone 14 Pro, MacBook Air M2"
+                    required
+                    disabled={!isAuthenticated}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-main font-medium mb-3">
+                    Category *
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-4 py-3 bg-surface/50 border border-main/20 rounded-button text-main focus:ring-2 focus:ring-gold focus:border-gold transition-all backdrop-blur-sm"
+                    required
+                    disabled={!isAuthenticated}
+                  >
+                    <option value="">Select Category</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="vehicles">Vehicles</option>
+                    <option value="jewelry">Jewelry</option>
+                    <option value="art">Art & Collectibles</option>
+                    <option value="real_estate">Real Estate</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-main font-medium mb-3">
+                    Brand/Manufacturer *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.brand || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, brand: e.target.value }))}
+                    className="w-full px-4 py-3 bg-surface/50 border border-main/20 rounded-button text-main placeholder-muted focus:ring-2 focus:ring-gold focus:border-gold transition-all backdrop-blur-sm"
+                    placeholder="e.g., Apple, Samsung, Toyota, Rolex"
+                    required
+                    disabled={!isAuthenticated}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-main font-medium mb-3">
+                    Serial Number *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.serialNumber || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))}
+                    className="w-full px-4 py-3 bg-surface/50 border border-main/20 rounded-button text-main placeholder-muted focus:ring-2 focus:ring-gold focus:border-gold transition-all backdrop-blur-sm"
+                    placeholder="e.g., ABC123456789, IMEI, VIN, Serial Code"
+                    required
+                    disabled={!isAuthenticated}
+                  />
+                  <p className="text-muted text-sm mt-2">
+                    Serial numbers are required for unique item identification and verification
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-main font-medium mb-3">
+                    Estimated Value (USD)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    value={formData.est_value || ''}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      est_value: parseFloat(e.target.value) || 0 
+                    }))}
+                    className="w-full px-4 py-3 bg-surface/50 border border-main/20 rounded-button text-main placeholder-muted focus:ring-2 focus:ring-gold focus:border-gold transition-all backdrop-blur-sm"
+                    placeholder="1000.00 (optional)"
+                    disabled={!isAuthenticated}
+                  />
+                  <p className="text-muted text-sm mt-2">
+                    Optional field to help with insurance and verification purposes
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-main font-medium mb-3">
+                    Bill/Receipt (optional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      onChange={(e) => handleFileChange(e, 'billFile')}
+                      accept="image/*,.pdf"
+                      className="w-full px-4 py-3 bg-surface/50 border border-main/20 rounded-button text-main file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-gold file:text-main hover:file:bg-gold/90 focus:ring-2 focus:ring-gold focus:border-gold transition-all backdrop-blur-sm"
+                      disabled={!isAuthenticated}
+                    />
+                    <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted pointer-events-none" />
+                  </div>
+                  <p className="text-muted text-sm mt-2">
+                    Upload proof of purchase (JPG, PNG, PDF - Max 10MB)
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-main font-medium mb-3">
+                    ID Document (optional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      onChange={(e) => handleFileChange(e, 'idFile')}
+                      accept="image/*,.pdf"
+                      className="w-full px-4 py-3 bg-surface/50 border border-main/20 rounded-button text-main file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-gold file:text-main hover:file:bg-gold/90 focus:ring-2 focus:ring-gold focus:border-gold transition-all backdrop-blur-sm"
+                      disabled={!isAuthenticated}
+                    />
+                    <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted pointer-events-none" />
+                  </div>
+                  <p className="text-muted text-sm mt-2">
+                    Upload government ID for verification (JPG, PNG, PDF - Max 10MB)
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading || !isAuthenticated || !formData.title || !formData.category || !formData.brand || !formData.serialNumber}
+                  className="w-full btn-primary py-4 text-lg font-medium relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <Shield className="w-5 h-5" />
+                    {isLoading ? 'Registering Item...' : 'Register Item'}
+                  </div>
+                  
+                  {/* Button glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+              </form>
+
+              {/* How it Works Section */}
+              <div className="mt-12 p-6 rounded-card border border-blue/20 bg-gradient-to-br from-blue/5 to-transparent relative overflow-hidden">
+                {/* Background gradient */}
+                <div 
+                  className="absolute inset-0 opacity-20"
+                  style={{
+                    background: `linear-gradient(135deg, 
+                      rgba(107, 203, 255, 0.1) 0%, 
+                      transparent 70%
+                    )`
+                  }}
+                />
+                
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Star className="w-5 h-5 text-blue" />
+                    <h3 className="font-medium text-blue text-lg">How Registration Works</h3>
+                  </div>
+                  <ol className="space-y-3">
+                    <li className="flex items-start gap-3 text-muted">
+                      <span className="w-6 h-6 rounded-full bg-blue/20 text-blue text-sm font-medium flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                      <span>Fill out item details with accurate information</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-muted">
+                      <span className="w-6 h-6 rounded-full bg-blue/20 text-blue text-sm font-medium flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                      <span>Upload supporting documents (optional but increases trust score)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-muted">
+                      <span className="w-6 h-6 rounded-full bg-blue/20 text-blue text-sm font-medium flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                      <span>Submit for community verification and review</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-muted">
+                      <span className="w-6 h-6 rounded-full bg-green/20 text-green text-sm font-medium flex items-center justify-center flex-shrink-0 mt-0.5">4</span>
+                      <span className="text-green">Earn 100 XP once verified and approved</span>
+                    </li>
+                  </ol>
+                </div>
+              </div>
             </div>
-
-            {currentStep < 3 ? (
-              <Button
-                onClick={handleNext}
-                disabled={!canProceed()}
-                className="flex items-center gap-2 px-6 py-3 bg-gold hover:bg-gold/90 text-bg-main"
-              >
-                Next
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleMint}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-8 py-3 bg-green hover:bg-green/90 text-bg-main"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-bg-main/20 border-t-bg-main rounded-full animate-spin" />
-                    Minting...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4" />
-                    Mint Onchain
-                  </>
-                )}
-              </Button>
-            )}
-          </motion.div>
-
-          {/* Help Text */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="text-center mt-8"
-          >
-            <p className="text-sm text-muted">
-              Need help? Contact our support team or check our{' '}
-              <a href="#" className="text-gold hover:text-gold/80 transition-colors">
-                documentation
-              </a>
-            </p>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

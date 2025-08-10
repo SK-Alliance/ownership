@@ -1,26 +1,56 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useAccount } from 'wagmi';
 import DashboardHeader from './DashboardHeader';
 import ItemCard from './ItemCard';
 import EmptyState from './EmptyState';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useUserIPNFTs } from '@/lib/hooks/useUserIPNFTs';
 import { dummyDashboardData } from '@/data/dashboard';
-import { Filter, Grid, List, Search, SortAsc } from 'lucide-react';
+import { Filter, Grid, List, Search, SortAsc, RefreshCw, AlertCircle } from 'lucide-react';
 
 type FilterType = 'all' | 'verified' | 'pending' | 'rejected';
 type SortType = 'newest' | 'oldest' | 'xp-high' | 'xp-low';
 
 export default function Dashboard() {
+  const { isConnected } = useAccount();
+  const { tokens: ipnftTokens, isLoading: isLoadingTokens, error: tokensError, refetch } = useUserIPNFTs();
+  
   const [filter, setFilter] = useState<FilterType>('all');
   const [sort, setSort] = useState<SortType>('newest');
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Convert IP-NFT tokens to dashboard item format and combine with dummy data
+  const dashboardItems = useMemo(() => {
+    const convertedTokens = ipnftTokens.map(token => ({
+      id: token.tokenId,
+      title: token.metadata.name,
+      description: token.metadata.description,
+      category: token.metadata.attributes?.find(attr => attr.trait_type === 'Category')?.value || 'Uncategorized',
+      verificationStatus: 'verified' as const,
+      registrationDate: token.createdAt || new Date().toISOString(),
+      xp: 100, // Base XP for verified IP-NFT
+      coOwners: 1, // IP-NFTs typically have single ownership initially
+      imageUrl: token.metadata.image || '/placeholder-item.jpg',
+      ipnftTokenId: token.tokenId,
+      estimatedValue: token.metadata.attributes?.find(attr => attr.trait_type === 'Estimated Value')?.value || 'N/A'
+    }));
+
+    // For demo purposes, also include dummy data but mark them as different
+    const dummyItems = dummyDashboardData.items.map(item => ({
+      ...item,
+      ipnftTokenId: undefined as string | undefined // Mark as non-IP-NFT items
+    }));
+
+    return [...convertedTokens, ...dummyItems];
+  }, [ipnftTokens]);
+
   // Filter and sort items
-  const filteredItems = dummyDashboardData.items
+  const filteredItems = dashboardItems
     .filter(item => {
       if (filter === 'all') return true;
       return item.verificationStatus === filter;
@@ -46,8 +76,8 @@ export default function Dashboard() {
     });
 
   const getFilterCount = (filterType: FilterType) => {
-    if (filterType === 'all') return dummyDashboardData.items.length;
-    return dummyDashboardData.items.filter(item => item.verificationStatus === filterType).length;
+    if (filterType === 'all') return dashboardItems.length;
+    return dashboardItems.filter(item => item.verificationStatus === filterType).length;
   };
 
   const getFilterColor = (filterType: FilterType) => {
@@ -68,7 +98,7 @@ export default function Dashboard() {
       <div className="container mx-auto px-6 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Dashboard Header */}
-          <DashboardHeader user={dummyDashboardData.user} />
+          <DashboardHeader />
 
           {/* Items Section */}
           <motion.div
@@ -86,6 +116,18 @@ export default function Dashboard() {
               </div>
               
               <div className="flex items-center gap-3">
+                {/* Refresh IP-NFTs Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={isLoadingTokens}
+                  className="flex items-center gap-2 px-3 py-2 text-muted hover:text-main border-main/20 hover:border-main/40"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLoadingTokens ? 'animate-spin' : ''}`} />
+                  {isLoadingTokens ? 'Loading...' : 'Refresh'}
+                </Button>
+
                 {/* View Mode Toggle */}
                 <div className="flex items-center rounded-lg bg-main/10 border border-main/20 p-1">
                   <Button
@@ -107,6 +149,56 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {/* IP-NFT Status Display */}
+            {!isConnected && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <div className="bg-orange-500/5 border border-orange-500/20 rounded-lg p-4 flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-main">Connect Your Wallet</p>
+                    <p className="text-xs text-muted">Connect your wallet to view your IP certificates</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {tokensError && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-4 flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-main">Failed to Load IP Certificates</p>
+                    <p className="text-xs text-muted">{tokensError}</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {isConnected && ipnftTokens.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <div className="bg-green/5 border border-green/20 rounded-lg p-4 flex items-center gap-3">
+                  <Badge className="bg-green/20 text-green border-green/30">
+                    {ipnftTokens.length} IP Certificate{ipnftTokens.length !== 1 ? 's' : ''} Found
+                  </Badge>
+                  <p className="text-sm text-muted">
+                    Your registered IP certificates are displayed with verified status
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
             {/* Filters and Search */}
             <div className="flex flex-col lg:flex-row gap-6 mb-8">
