@@ -98,7 +98,7 @@ export default function Dashboard() {
       <div className="container mx-auto px-6 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Dashboard Header */}
-          <DashboardHeader user={dummyDashboardData.user} />
+          <DashboardHeader />
 
           {/* Items Section */}
           <motion.div

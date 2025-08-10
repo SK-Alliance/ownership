@@ -26,6 +26,29 @@ class WalletAuthService {
 
       console.log(`🔍 Checking user for wallet: ${walletAddress}`);
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url_here') {
+        console.warn('⚠️ Supabase not configured - creating mock user');
+        
+        // Create a mock user for development without Supabase
+        const mockUser = {
+          id: `mock-${Date.now()}`,
+          wallet_address: walletAddress,
+          display_name: null,
+          email: null,
+          avatar_url: null,
+          xp_points: 100,
+          monthly_credits: 10,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as UserRow;
+        
+        setUser(mockUser);
+        this.processedWallets.add(walletAddress.toLowerCase());
+        setWalletConnected(true);
+        return mockUser;
+      }
+
       // Check if user exists in Supabase
       let user = await userService.getByWallet(walletAddress);
 
@@ -50,7 +73,25 @@ class WalletAuthService {
       console.error('❌ Error handling wallet connection:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
       setError(errorMessage);
-      throw error;
+      
+      // Don't throw error to prevent React crash - instead create a fallback user
+      console.warn('🔄 Creating fallback user due to connection error');
+      const fallbackUser = {
+        id: `fallback-${Date.now()}`,
+        wallet_address: walletAddress,
+        display_name: null,
+        email: null,
+        avatar_url: null,
+        xp_points: 0,
+        monthly_credits: 10,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as UserRow;
+      
+      setUser(fallbackUser);
+      this.processedWallets.add(walletAddress.toLowerCase());
+      setWalletConnected(true);
+      return fallbackUser;
     } finally {
       setLoading(false);
       this.isProcessing = false;

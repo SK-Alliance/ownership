@@ -1,18 +1,99 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { UserProfile } from '@/types/dashboard';
-import { getTierColor } from '@/data/dashboard';
+import { getUserTier, getTierColor } from '@/data/dashboard';
 import { Shield, Trophy, Calendar } from 'lucide-react';
 
-interface DashboardHeaderProps {
-  user: UserProfile;
+interface DashboardUser {
+  address: string;
+  username: string;
+  fullName: string;
+  totalXP: number;
+  tier: 'New User' | 'Verified Collector' | 'Power Owner';
+  listingCredits: {
+    used: number;
+    total: number;
+    resetDate: string;
+  };
 }
 
-export default function DashboardHeader({ user }: DashboardHeaderProps) {
+export default function DashboardHeader() {
+  const { address } = useAccount();
+  const [user, setUser] = useState<DashboardUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!address) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/profile/${address}`);
+        if (response.ok) {
+          const profileData = await response.json();
+          // Transform profile data to dashboard user format
+          const dashboardUser: DashboardUser = {
+            address: address,
+            username: profileData.username || '',
+            fullName: profileData.fullName || '',
+            totalXP: 75, // You can set default XP or fetch from another source
+            tier: getUserTier(75),
+            listingCredits: {
+              used: 3,
+              total: 10,
+              resetDate: '2025-09-01'
+            }
+          };
+          setUser(dashboardUser);
+        } else if (response.status === 404) {
+          // Profile doesn't exist - create default user
+          const defaultUser: DashboardUser = {
+            address: address,
+            username: '',
+            fullName: '',
+            totalXP: 0,
+            tier: getUserTier(0),
+            listingCredits: {
+              used: 0,
+              total: 10,
+              resetDate: '2025-09-01'
+            }
+          };
+          setUser(defaultUser);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [address]);
+
+  if (isLoading) {
+    return (
+      <div className="relative rounded-card border border-main/20 overflow-hidden backdrop-blur-xl mb-8 p-8 mx-0.5 md:mx-[18px] xl:mx-6">
+        <div className="flex items-center gap-6">
+          <div className="w-16 h-16 rounded-full bg-main/10 animate-pulse"></div>
+          <div className="space-y-2">
+            <div className="w-48 h-6 bg-main/10 rounded animate-pulse"></div>
+            <div className="w-32 h-4 bg-main/10 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
   const maxXP = 100;
   const progressPercentage = Math.min((user.totalXP / maxXP) * 100, 100);
 
@@ -21,12 +102,15 @@ export default function DashboardHeader({ user }: DashboardHeaderProps) {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // Get display name with fallback
+  const displayName = user.fullName || user.username || formatAddress(user.address);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      className="relative rounded-card border border-main/20 overflow-hidden backdrop-blur-xl mb-8"
+      className="relative rounded-card border border-main/20 overflow-hidden backdrop-blur-xl mb-8 mx-0.5 md:mx-[18px] xl:mx-6"
       style={{
         background: `linear-gradient(135deg, 
           rgba(255, 255, 255, 0.08) 0%, 
@@ -73,10 +157,14 @@ export default function DashboardHeader({ user }: DashboardHeaderProps) {
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-clash text-main">Welcome back!</h1>
+                <h1 className="text-2xl font-clash text-main">
+                  Welcome back! {displayName && (
+                    <span className="text-gold">{displayName}</span>
+                  )}
+                </h1>
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3, duration: 0.4 }}
                 >
                   <Badge 

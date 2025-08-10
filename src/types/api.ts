@@ -2,7 +2,9 @@
 export interface RegisterItemRequest {
   title: string;
   category: string;
-  est_value: number;
+  brand: string;
+  serialNumber: string;
+  est_value?: number;
   billFile?: File;
   idFile?: File;
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { X, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function WhatMakesItDifferentSection() {
   const comparisons = [

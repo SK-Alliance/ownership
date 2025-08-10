@@ -11,7 +11,7 @@ class ItemService {
       
       formData.append('title', params.title);
       formData.append('category', params.category);
-      formData.append('est_value', params.est_value.toString());
+      formData.append('est_value', params.est_value?.toString() || '0');
       formData.append('wallet_address', params.walletAddress);
       
       if (params.billFile) {
