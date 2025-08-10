@@ -1,10 +1,8 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from 'wagmi';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { config } from '../../wagmi.config';
-import { basecampTestnet } from 'viem/chains';
+
+import { CampProvider } from "@campnetwork/origin/react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
     // Optimized query client for faster loading
@@ -20,13 +18,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <WagmiProvider config={config}>
-                <RainbowKitProvider
-                    initialChain={basecampTestnet}
-                >
-                    {children}
-                </RainbowKitProvider>
-            </WagmiProvider>
+            <CampProvider
+                clientId={process.env.NEXT_PUBLIC_CAMP_CLIENT_ID || "fce77d7a-8085-47ca-adff-306a933e76aa"}
+              >
+                {children}
+            </CampProvider>
         </QueryClientProvider>
     );
 }

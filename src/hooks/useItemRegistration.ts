@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAuthState } from '@campnetwork/origin/react';
 import { itemService } from '@/services/item-service';
 import { RegisterItemRequest, RegisterItemResponse } from '@/types/api';
 import { useUserStore } from '@/lib/stores/user-store';
@@ -18,7 +18,9 @@ export function useItemRegistration(): UseItemRegistrationReturn {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   
-  const { address } = useAccount();
+  const { authenticated } = useAuthState();
+  // TODO: Get actual address from Camp Network SDK
+  const address = authenticated ? 'camp-connected-user' : undefined;
   const { user } = useUserStore();
 
   const registerItem = async (data: RegisterItemRequest): Promise<RegisterItemResponse | null> => {

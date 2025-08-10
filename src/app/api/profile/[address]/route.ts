@@ -1,3 +1,5 @@
+//this api shows the user information from the db
+
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
@@ -29,6 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       fullName: profile.full_name || '',
       email: profile.email || '',
       walletAddress: profile.wallet_address,
+      xpPoints: profile.xp_points || 0,
     });
 
   } catch (error) {
