@@ -5,60 +5,69 @@ import { useState, useMemo } from 'react';
 import { useAuthState } from '@campnetwork/origin/react';
 import DashboardHeader from './DashboardHeader';
 import ItemCard from './ItemCard';
+import { ItemsTable } from './ItemsTable';
 import EmptyState from './EmptyState';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useUserIPNFTs } from '@/lib/hooks/useUserIPNFTs';
-import { dummyDashboardData } from '@/data/dashboard';
+import { useWalletConnection } from '@/hooks/useWalletConnection';
+import { useUserItems } from '@/hooks/useUserItems';
 import { Filter, Grid, List, Search, SortAsc, RefreshCw, AlertCircle } from 'lucide-react';
 
-type FilterType = 'all' | 'verified' | 'pending' | 'rejected';
-type SortType = 'newest' | 'oldest' | 'xp-high' | 'xp-low';
+type FilterType = 'all' | 'verified' | 'pending_verification' | 'rejected';
+type SortType = 'newest' | 'oldest' | 'value-high' | 'value-low';
 
 export default function Dashboard() {
   const { authenticated } = useAuthState();
-  const { tokens: ipnftTokens, isLoading: isLoadingTokens, error: tokensError, refetch } = useUserIPNFTs();
+  const { address, isConnected } = useWalletConnection();
+  const { items, isLoading, error, refetch } = useUserItems();
   
   const [filter, setFilter] = useState<FilterType>('all');
   const [sort, setSort] = useState<SortType>('newest');
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('table');
 
-  // Convert IP-NFT tokens to dashboard item format and combine with dummy data
+  // Convert database items to dashboard format
   const dashboardItems = useMemo(() => {
-    const convertedTokens = ipnftTokens.map(token => ({
-      id: token.tokenId,
-      title: token.metadata.name,
-      description: token.metadata.description,
-      category: token.metadata.attributes?.find(attr => attr.trait_type === 'Category')?.value || 'Uncategorized',
-      verificationStatus: 'verified' as const,
-      registrationDate: token.createdAt || new Date().toISOString(),
-      xp: 100, // Base XP for verified IP-NFT
-      coOwners: 1, // IP-NFTs typically have single ownership initially
-      imageUrl: token.metadata.image || '/placeholder-item.jpg',
-      ipnftTokenId: token.tokenId,
-      estimatedValue: token.metadata.attributes?.find(attr => attr.trait_type === 'Estimated Value')?.value || 'N/A'
+    return items.map(item => ({
+      id: item.id,
+      title: item.title,
+      description: `${item.brand} - ${item.category}`,
+      category: item.category,
+      verificationStatus: item.status === 'pending_verification' ? 'pending' as const : 
+                         item.status === 'verified' ? 'verified' as const :
+                         'rejected' as const,
+      registrationDate: item.created_at,
+      xp: item.status === 'verified' ? 100 : item.status === 'pending_verification' ? 50 : 0,
+      coOwners: 1,
+      imageUrl: item.item_image_url || '/placeholder-item.jpg',
+      estimatedValue: item.estimated_value,
+      serialNumber: item.serial_number,
+      brand: item.brand,
+      itemImageUrl: item.item_image_url,
+      billUrl: item.bill_url,
+      idUrl: item.id_url,
+      nftCertificateUrl: item.nft_certificate_url,
+      walletAddress: item.owner_wallet_address,
     }));
-
-    // For demo purposes, also include dummy data but mark them as different
-    const dummyItems = dummyDashboardData.items.map(item => ({
-      ...item,
-      ipnftTokenId: undefined as string | undefined // Mark as non-IP-NFT items
-    }));
-
-    return [...convertedTokens, ...dummyItems];
-  }, [ipnftTokens]);
+  }, [items]);
 
   // Filter and sort items
   const filteredItems = dashboardItems
     .filter(item => {
       if (filter === 'all') return true;
-      return item.verificationStatus === filter;
+      const statusMapping = {
+        'pending_verification': 'pending',
+        'verified': 'verified',
+        'rejected': 'rejected'
+      };
+      const mappedFilter = filter === 'pending_verification' ? 'pending' : filter;
+      return item.verificationStatus === mappedFilter;
     })
     .filter(item => {
       if (!searchTerm) return true;
       return item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             item.category.toLowerCase().includes(searchTerm.toLowerCase());
+             item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             item.brand.toLowerCase().includes(searchTerm.toLowerCase());
     })
     .sort((a, b) => {
       switch (sort) {
@@ -66,10 +75,10 @@ export default function Dashboard() {
           return new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime();
         case 'oldest':
           return new Date(a.registrationDate).getTime() - new Date(b.registrationDate).getTime();
-        case 'xp-high':
-          return b.xp - a.xp;
-        case 'xp-low':
-          return a.xp - b.xp;
+        case 'value-high':
+          return b.estimatedValue - a.estimatedValue;
+        case 'value-low':
+          return a.estimatedValue - b.estimatedValue;
         default:
           return 0;
       }
@@ -77,14 +86,20 @@ export default function Dashboard() {
 
   const getFilterCount = (filterType: FilterType) => {
     if (filterType === 'all') return dashboardItems.length;
-    return dashboardItems.filter(item => item.verificationStatus === filterType).length;
+    const statusMapping = {
+      'pending_verification': 'pending',
+      'verified': 'verified',
+      'rejected': 'rejected'
+    };
+    const mappedFilter = filterType === 'pending_verification' ? 'pending' : filterType;
+    return dashboardItems.filter(item => item.verificationStatus === mappedFilter).length;
   };
 
   const getFilterColor = (filterType: FilterType) => {
     switch (filterType) {
       case 'verified':
         return 'bg-green/20 text-green border-green/30';
-      case 'pending':
+      case 'pending_verification':
         return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'rejected':
         return 'bg-red-500/20 text-red-400 border-red-500/30';
@@ -116,20 +131,28 @@ export default function Dashboard() {
               </div>
               
               <div className="flex items-center gap-3">
-                {/* Refresh IP-NFTs Button */}
+                {/* Refresh Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => refetch()}
-                  disabled={isLoadingTokens}
+                  disabled={isLoading}
                   className="flex items-center gap-2 px-3 py-2 text-muted hover:text-main border-main/20 hover:border-main/40"
                 >
-                  <RefreshCw className={`w-4 h-4 ${isLoadingTokens ? 'animate-spin' : ''}`} />
-                  {isLoadingTokens ? 'Loading...' : 'Refresh'}
+                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  {isLoading ? 'Loading...' : 'Refresh'}
                 </Button>
 
                 {/* View Mode Toggle */}
                 <div className="flex items-center rounded-lg bg-main/10 border border-main/20 p-1">
+                  <Button
+                    variant={viewMode === 'table' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('table')}
+                    className={`px-3 py-2 ${viewMode === 'table' ? 'bg-main/20 text-main' : 'text-muted hover:text-main'}`}
+                  >
+                    <List className="w-4 h-4" />
+                  </Button>
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
@@ -138,19 +161,11 @@ export default function Dashboard() {
                   >
                     <Grid className="w-4 h-4" />
                   </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className={`px-3 py-2 ${viewMode === 'list' ? 'bg-main/20 text-main' : 'text-muted hover:text-main'}`}
-                  >
-                    <List className="w-4 h-4" />
-                  </Button>
                 </div>
               </div>
             </div>
 
-            {/* IP-NFT Status Display */}
+            {/* Connection Status */}
             {!authenticated && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -161,13 +176,13 @@ export default function Dashboard() {
                   <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-main">Connect Your Wallet</p>
-                    <p className="text-xs text-muted">Connect your wallet to view your IP certificates</p>
+                    <p className="text-xs text-muted">Connect your wallet to view your registered items</p>
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {tokensError && (
+            {error && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -176,14 +191,14 @@ export default function Dashboard() {
                 <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-4 flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-main">Failed to Load IP Certificates</p>
-                    <p className="text-xs text-muted">{tokensError}</p>
+                    <p className="text-sm font-medium text-main">Failed to Load Items</p>
+                    <p className="text-xs text-muted">{error}</p>
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {authenticated && ipnftTokens.length > 0 && (
+            {authenticated && isConnected && items.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -191,10 +206,10 @@ export default function Dashboard() {
               >
                 <div className="bg-green/5 border border-green/20 rounded-lg p-4 flex items-center gap-3">
                   <Badge className="bg-green/20 text-green border-green/30">
-                    {ipnftTokens.length} IP Certificate{ipnftTokens.length !== 1 ? 's' : ''} Found
+                    {items.length} Item{items.length !== 1 ? 's' : ''} Found
                   </Badge>
                   <p className="text-sm text-muted">
-                    Your registered IP certificates are displayed with verified status
+                    Your registered items from the database
                   </p>
                 </div>
               </motion.div>
@@ -220,7 +235,7 @@ export default function Dashboard() {
                   <Filter className="w-4 h-4" />
                   <span>Filter:</span>
                 </div>
-                {(['all', 'verified', 'pending', 'rejected'] as FilterType[]).map((filterType) => (
+                {(['all', 'verified', 'pending_verification', 'rejected'] as FilterType[]).map((filterType) => (
                   <Badge
                     key={filterType}
                     variant={filter === filterType ? 'default' : 'outline'}
@@ -231,7 +246,9 @@ export default function Dashboard() {
                     }`}
                     onClick={() => setFilter(filterType)}
                   >
-                    {filterType === 'all' ? 'All' : filterType.charAt(0).toUpperCase() + filterType.slice(1)} ({getFilterCount(filterType)})
+                    {filterType === 'all' ? 'All' : 
+                     filterType === 'pending_verification' ? 'Pending' :
+                     filterType.charAt(0).toUpperCase() + filterType.slice(1)} ({getFilterCount(filterType)})
                   </Badge>
                 ))}
               </div>
@@ -249,13 +266,13 @@ export default function Dashboard() {
                 >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
-                  <option value="xp-high">Highest XP</option>
-                  <option value="xp-low">Lowest XP</option>
+                  <option value="value-high">Highest Value</option>
+                  <option value="value-low">Lowest Value</option>
                 </select>
               </div>
             </div>
 
-            {/* Items Grid/List */}
+            {/* Items Display */}
             {filteredItems.length === 0 ? (
               searchTerm || filter !== 'all' ? (
                 <motion.div
@@ -276,23 +293,50 @@ export default function Dashboard() {
                 <EmptyState />
               )
             ) : (
-              <motion.div
-                className={`grid gap-6 ${
-                  viewMode === 'grid' 
-                    ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' 
-                    : 'grid-cols-1'
-                }`}
-                layout
-                transition={{ duration: 0.3 }}
-              >
-                {filteredItems.map((item, index) => (
-                  <ItemCard 
-                    key={item.id} 
-                    item={item} 
-                    index={index}
-                  />
-                ))}
-              </motion.div>
+              <>
+                {viewMode === 'table' ? (
+                  <ItemsTable items={items.filter(item => {
+                    // Apply the same filtering logic for the table
+                    const matchesFilter = filter === 'all' || item.status === filter;
+                    const matchesSearch = !searchTerm || 
+                      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      item.brand.toLowerCase().includes(searchTerm.toLowerCase());
+                    return matchesFilter && matchesSearch;
+                  }).sort((a, b) => {
+                    switch (sort) {
+                      case 'newest':
+                        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                      case 'oldest':
+                        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                      case 'value-high':
+                        return b.estimated_value - a.estimated_value;
+                      case 'value-low':
+                        return a.estimated_value - b.estimated_value;
+                      default:
+                        return 0;
+                    }
+                  })} />
+                ) : (
+                  <motion.div
+                    className={`grid gap-6 ${
+                      viewMode === 'grid' 
+                        ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' 
+                        : 'grid-cols-1'
+                    }`}
+                    layout
+                    transition={{ duration: 0.3 }}
+                  >
+                    {filteredItems.map((item, index) => (
+                      <ItemCard 
+                        key={item.id} 
+                        item={item} 
+                        index={index}
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </>
             )}
           </motion.div>
         </div>

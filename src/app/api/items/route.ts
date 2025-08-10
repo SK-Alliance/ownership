@@ -1,24 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 // API to fetch the items listed by the user
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Implement actual item fetching logic
-    // For now, return mock data
-    const mockItems = [
-      {
-        id: '1',
-        title: 'Sample Item',
-        category: 'Electronics',
-        status: 'verified'
-      }
-    ];
+    const { searchParams } = new URL(request.url);
+    const walletAddress = searchParams.get('walletAddress');
+
+    if (!walletAddress) {
+      return NextResponse.json(
+        { success: false, error: 'Wallet address is required' },
+        { status: 400 }
+      );
+    }
+
+    const { data: items, error } = await supabase
+      .from('items')
+      .select('*')
+      .eq('owner_wallet_address', walletAddress)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Database error:', error);
+      return NextResponse.json(
+        { success: false, error: 'Failed to fetch items from database' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ 
       success: true, 
-      data: mockItems 
+      data: items || []
     });
-  } catch {
+  } catch (error) {
+    console.error('API error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch items' },
       { status: 500 }
