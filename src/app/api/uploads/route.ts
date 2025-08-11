@@ -1,8 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// API to handle file uploading
+// API to handle file uploading and IPFS metadata uploads
 export async function POST(request: NextRequest) {
   try {
+    const contentType = request.headers.get('content-type');
+    
+    // Handle IPFS metadata upload
+    if (contentType?.includes('application/json')) {
+      const body = await request.json();
+      
+      if (body.type === 'ipfs_metadata' && body.metadata) {
+        // Simulate IPFS upload for now
+        // In production, you would upload to actual IPFS service like Pinata, Web3.Storage, etc.
+        const mockIpfsHash = `Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+        
+        console.log('📦 Uploading metadata to IPFS:', body.metadata);
+        console.log('🔗 Mock IPFS hash:', mockIpfsHash);
+        
+        // Store metadata locally for now (in production, this would be on IPFS)
+        // You could also store this in your database
+        
+        return NextResponse.json({ 
+          success: true, 
+          message: 'Metadata uploaded to IPFS successfully',
+          ipfsHash: mockIpfsHash,
+          metadataURI: `ipfs://${mockIpfsHash}`
+        });
+      }
+    }
+
+    // Handle regular file upload
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
@@ -26,9 +53,10 @@ export async function POST(request: NextRequest) {
         url: mockFileUrl
       }
     });
-  } catch {
+  } catch (error) {
+    console.error('Upload API error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to upload file' },
+      { success: false, error: 'Failed to upload' },
       { status: 500 }
     );
   }
