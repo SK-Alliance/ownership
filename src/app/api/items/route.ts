@@ -14,10 +14,33 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // First, get the user ID from the wallet address
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('wallet_address', walletAddress)
+      .single();
+
+    if (userError) {
+      console.error('User lookup error:', userError);
+      return NextResponse.json(
+        { success: false, error: 'Failed to find user' },
+        { status: 404 }
+      );
+    }
+
+    if (!user) {
+      return NextResponse.json({ 
+        success: true, 
+        data: [] // No user found, return empty array
+      });
+    }
+
+    // Now fetch items for this user
     const { data: items, error } = await supabase
       .from('items')
       .select('*')
-      .eq('owner_wallet_address', walletAddress)
+      .eq('owner_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {

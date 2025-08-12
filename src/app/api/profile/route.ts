@@ -28,12 +28,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
-    // Check if username is already taken (if provided)
+    // Check if display name is already taken (if provided)
     if (username) {
-      const { data: existingUsername, error: usernameError } = await supabase
-        .from('user_profiles')
+      const { data: existingUser, error: usernameError } = await supabase
+        .from('users')
         .select('wallet_address')
-        .eq('username', username.toLowerCase())
+        .eq('display_name', username)
         .neq('wallet_address', walletAddress.toLowerCase())
         .single();
 
@@ -41,20 +41,20 @@ export async function POST(request: NextRequest) {
         throw usernameError;
       }
 
-      if (existingUsername) {
-        return NextResponse.json({ error: 'Username already taken' }, { status: 409 });
+      if (existingUser) {
+        return NextResponse.json({ error: 'Display name already taken' }, { status: 409 });
       }
     }
 
     // Upsert profile data
     const { data: profile, error } = await supabase
-      .from('user_profiles')
+      .from('users')
       .upsert({
         wallet_address: walletAddress.toLowerCase(),
-        username: username?.toLowerCase() || null,
-        full_name: fullName || null,
+        display_name: username || null,
         email: email?.toLowerCase() || null,
         xp_points: 0, // Initialize with 0 XP for new profiles
+        monthly_credits: 5, // Initialize with default credits
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'wallet_address'
@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      username: profile.username || '',
-      fullName: profile.full_name || '',
+      username: profile.display_name || '',
+      fullName: profile.display_name || '',
       email: profile.email || '',
       walletAddress: profile.wallet_address,
       xpPoints: profile.xp_points || 0,

@@ -10,38 +10,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      user_profiles: {
-        Row: {
-          id: string
-          wallet_address: string
-          username: string | null
-          full_name: string | null
-          email: string | null
-          xp_points: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          wallet_address: string
-          username?: string | null
-          full_name?: string | null
-          email?: string | null
-          xp_points?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          wallet_address?: string
-          username?: string | null
-          full_name?: string | null
-          email?: string | null
-          xp_points?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
       users: {
         Row: {
           id: string

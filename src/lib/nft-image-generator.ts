@@ -7,6 +7,7 @@ interface NFTImageData {
   itemImage: string; // base64 data URL
   itemName: string;
   ownerName: string;
+  serialNumber?: string;
 }
 
 export class NFTImageGenerator {
@@ -62,7 +63,8 @@ export class NFTImageGenerator {
     
     // Draw text sections
     this.drawItemName(ctx, data.itemName);
-    this.drawOwnerName(ctx, data.ownerName);
+    this.drawOwnerInfo(ctx, data.ownerName);
+    this.drawSerialInfo(ctx, data.serialNumber || '');
     
     // Draw Auctor branding
     this.drawBranding(ctx);
@@ -159,41 +161,51 @@ export class NFTImageGenerator {
     ctx.shadowOffsetY = 0;
   }
 
-  private static drawOwnerName(ctx: CanvasRenderingContext2D, ownerName: string) {
+  private static drawOwnerInfo(ctx: CanvasRenderingContext2D, ownerName: string) {
     const y = this.PADDING * 2 + this.IMAGE_HEIGHT + 140;
+    const leftX = this.PADDING * 3;
+    const rightX = this.CANVAS_WIDTH - this.PADDING * 3;
     
-    // Owner label
+    // "Owned by" on the left
     ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; // --text-muted
     ctx.font = '20px Inter, system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('OWNED BY', this.CANVAS_WIDTH / 2, y);
+    ctx.textAlign = 'left';
+    ctx.fillText('Owned by', leftX, y);
     
-    // Owner name
+    // Owner name on the right
     ctx.fillStyle = '#6BEFA5'; // --accent-green
-    ctx.font = 'bold 28px Inter, system-ui, sans-serif';
-    ctx.fillText(ownerName.toUpperCase(), this.CANVAS_WIDTH / 2, y + 40);
+    ctx.font = 'bold 24px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(ownerName, rightX, y);
+  }
+
+  private static drawSerialInfo(ctx: CanvasRenderingContext2D, serialNumber: string) {
+    const y = this.PADDING * 2 + this.IMAGE_HEIGHT + 180;
+    const leftX = this.PADDING * 3;
+    const rightX = this.CANVAS_WIDTH - this.PADDING * 3;
+    
+    // Serial number on the left
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; // --text-muted
+    ctx.font = '18px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(serialNumber || 'N/A', leftX, y);
+    
+    // "AUCTOR" on the right
+    ctx.fillStyle = '#FFD66B'; // --accent-gold
+    ctx.font = 'bold 20px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('AUCTOR', rightX, y);
   }
 
   private static drawBranding(ctx: CanvasRenderingContext2D) {
     const y = this.CANVAS_HEIGHT - this.PADDING * 2;
     
-    // Left side - Auctor
-    ctx.fillStyle = '#FFD66B'; // --accent-gold
-    ctx.font = 'bold 24px Inter, system-ui, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('AUCTOR', this.PADDING * 2, y - 30);
-    
-    // Right side - Digital Performance Network
-    ctx.fillStyle = '#FFD66B'; // --accent-gold
-    ctx.font = 'bold 24px Inter, system-ui, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('Digital Performance Network', this.CANVAS_WIDTH - this.PADDING * 2, y - 30);
-    
     // Center bottom subtitle
     ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
     ctx.font = '16px Inter, system-ui, sans-serif';
     ctx.textAlign = 'center';
-   }
+    ctx.fillText('Digital Performance Network', this.CANVAS_WIDTH / 2, y - 20);
+  }
 
   private static wrapText(
     ctx: CanvasRenderingContext2D,
