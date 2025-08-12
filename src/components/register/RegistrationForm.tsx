@@ -1,9 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Shield, Upload, Image as ImageIcon, Eye, Download, X, Sparkles } from 'lucide-react';
+import { Shield, Upload, Image as ImageIcon, X, Sparkles } from 'lucide-react';
 import { NFTImageGenerator } from '@/lib/nft-image-generator';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
+import { useAuthState, useAuth } from '@campnetwork/origin/react';
+import { useAccount, useWriteContract } from 'wagmi';
+import { CONTRACT_CONFIG } from '@/lib/contract-abi';
+import { SupabaseStorage } from '@/lib/supabase-storage';
 
 export default function RegistrationForm() {
   const [formData, setFormData] = useState({
@@ -16,14 +20,21 @@ export default function RegistrationForm() {
     idFile: null as File | null,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [nftPreview, setNftPreview] = useState<string | null>(null);
+  const [, setNftPreview] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isGeneratingNFT, setIsGeneratingNFT] = useState(false);
   const [showNFTModal, setShowNFTModal] = useState(false);
   const [finalNFTImage, setFinalNFTImage] = useState<string | null>(null);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
 
-  const { isAuthenticated, address, isConnected, user } = useWalletConnection();
+  const { isAuthenticated, address, user } = useWalletConnection();
+  const { authenticated } = useAuthState();
+  const auth = useAuth();
+  const { address: wagmiAddress, isConnected } = useAccount();
+  const { writeContract } = useWriteContract();
+  
+  // Minting options state
+  const [mintingOption, setMintingOption] = useState<'nft' | 'ip' | 'both'>('both');
 
   // Load saved image from localStorage on component mount
   useEffect(() => {
@@ -146,9 +157,152 @@ export default function RegistrationForm() {
     }
   };
 
-  const handleCloseModal = () => {
-    setShowNFTModal(false);
-    setFinalNFTImage(null);
+  const mintNFTOnCampNetwork = async () => {
+    if (!finalNFTImage) {
+      alert('Please generate NFT preview first');
+      return;
+    }
+
+    try {
+      setIsGeneratingNFT(true);
+      
+      // Convert base64 image to file for upload
+      const response = await fetch(finalNFTImage);
+      const blob = await response.blob();
+      const file = new File([blob], `${formData.serialNumber}-certificate.png`, { type: 'image/png' });
+      
+      const userAddress = wagmiAddress || address || 'camp-connected-user';
+      
+      console.log(`🚀 Starting dual minting process (${mintingOption})`);
+      
+      let nftResult = null;
+      let ipResult = null;
+
+      // Option 1 & 3: NFT Minting via BaseCamp Contract
+      if (mintingOption === 'nft' || mintingOption === 'both') {
+        console.log('📦 Uploading to Supabase and minting NFT...');
+        
+        // Upload image and metadata to Supabase
+        const uploadResult = await SupabaseStorage.uploadComplete(
+          file,
+          {
+            title: formData.title,
+            brand: formData.brand,
+            category: formData.category,
+            serialNumber: formData.serialNumber,
+            est_value: formData.est_value
+          },
+          userAddress
+        );
+        
+        if (!uploadResult.success) {
+          throw new Error(`Upload failed: ${uploadResult.error}`);
+        }
+        
+        console.log('✅ Supabase upload successful:', uploadResult.metadataUrl);
+        
+        // Mint NFT on BaseCamp using wagmi
+        if (isConnected && wagmiAddress) {
+          try {
+            writeContract({
+              ...CONTRACT_CONFIG,
+              functionName: 'mintTo',
+              args: [wagmiAddress as `0x${string}`, uploadResult.metadataUrl],
+            });
+            
+            nftResult = {
+              success: true,
+              metadataUrl: uploadResult.metadataUrl,
+              imageUrl: uploadResult.imageUrl,
+              contractAddress: CONTRACT_CONFIG.address
+            };
+            
+            console.log('✅ NFT minting transaction submitted');
+          } catch (error) {
+            console.error('NFT minting failed:', error);
+            nftResult = { success: false, error: error instanceof Error ? error.message : 'NFT minting failed' };
+          }
+        } else {
+          throw new Error('Wallet not connected for NFT minting');
+        }
+      }
+
+      // Option 2 & 3: IP Registration via Origin SDK
+      if (mintingOption === 'ip' || mintingOption === 'both') {
+        console.log('🏛️ Registering IP via Origin SDK...');
+        
+        if (authenticated && auth?.origin) {
+          try {
+            // Prepare metadata for IP registration
+            const ipMetadata = {
+              name: formData.title,
+              description: `Ownership certificate for ${formData.title} by ${formData.brand}. Serial: ${formData.serialNumber}`,
+              url: finalNFTImage // Use the generated image directly
+            };
+
+            // Define license terms (customizable)
+            const licenseTerms = {
+              price: BigInt(0), // Free for now
+              duration: 30 * 24 * 60 * 60, // 30 days in seconds
+              royaltyBps: 0, // No royalties for now (basis points)
+              paymentToken: '0x0000000000000000000000000000000000000000' as `0x${string}` // Zero address for native token
+            };
+
+            // Convert image to File for Origin SDK
+            const result = await auth.origin.mintFile(file, ipMetadata, licenseTerms);
+            
+            ipResult = {
+              success: true,
+              result: result,
+              ipId: `ip_${Date.now()}`
+            };
+            
+            console.log('✅ IP registration successful:', result);
+          } catch (error) {
+            console.error('IP registration failed:', error);
+            ipResult = { success: false, error: error instanceof Error ? error.message : 'IP registration failed' };
+          }
+        } else {
+          ipResult = { success: false, error: 'Not authenticated with Origin SDK' };
+        }
+      }
+
+      // Save all results to localStorage
+      const results = {
+        nft: nftResult,
+        ip: ipResult,
+        mintingOption,
+        timestamp: new Date().toISOString(),
+        itemData: formData
+      };
+      
+      localStorage.setItem('minting_results', JSON.stringify(results));
+      
+      // Close modal
+      setShowNFTModal(false);
+      setFinalNFTImage(null);
+      
+      // Show success message based on results
+      let successMessage = '🎉 ';
+      if (nftResult?.success && ipResult?.success) {
+        successMessage += 'Both NFT and IP registration completed successfully!';
+      } else if (nftResult?.success) {
+        successMessage += 'NFT minted successfully on BaseCamp!';
+      } else if (ipResult?.success) {
+        successMessage += 'IP registered successfully with Origin SDK!';
+      } else {
+        throw new Error('All minting operations failed');
+      }
+      
+      alert(successMessage);
+      
+    } catch (error) {
+      console.error('Dual minting error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Minting failed';
+      alert(`❌ Minting failed: ${errorMessage}`);
+    } finally {
+      setIsGeneratingNFT(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -543,7 +697,7 @@ export default function RegistrationForm() {
               <div className="relative z-10 p-8">
                 {/* Close Button */}
                 <button
-                  onClick={handleCloseModal}
+                  onClick={mintNFTOnCampNetwork}
                   className="absolute top-4 right-4 w-8 h-8 rounded-full bg-main/20 hover:bg-main/40 flex items-center justify-center transition-colors text-muted hover:text-main"
                 >
                   <X className="w-5 h-5" />
@@ -571,25 +725,82 @@ export default function RegistrationForm() {
                   </div>
                 </div>
 
+                {/* Minting Options */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-main mb-4 text-center">Choose Minting Option</h3>
+                  <div className="space-y-3">
+                    <label className="flex items-center space-x-3 p-3 rounded-lg border border-main/20 hover:border-gold/50 transition-colors cursor-pointer">
+                      <input
+                        type="radio"
+                        name="mintingOption"
+                        value="nft"
+                        checked={mintingOption === 'nft'}
+                        onChange={(e) => setMintingOption(e.target.value as 'nft' | 'ip' | 'both')}
+                        className="text-gold focus:ring-gold"
+                      />
+                      <div>
+                        <div className="text-main font-medium">NFT Only</div>
+                        <div className="text-muted text-sm">Traditional NFT on BaseCamp network</div>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-center space-x-3 p-3 rounded-lg border border-main/20 hover:border-gold/50 transition-colors cursor-pointer">
+                      <input
+                        type="radio"
+                        name="mintingOption"
+                        value="ip"
+                        checked={mintingOption === 'ip'}
+                        onChange={(e) => setMintingOption(e.target.value as 'nft' | 'ip' | 'both')}
+                        className="text-gold focus:ring-gold"
+                      />
+                      <div>
+                        <div className="text-main font-medium">IP Registration Only</div>
+                        <div className="text-muted text-sm">Intellectual property via Origin SDK</div>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-center space-x-3 p-3 rounded-lg border-2 border-gold/50 bg-gold/5 hover:border-gold transition-colors cursor-pointer">
+                      <input
+                        type="radio"
+                        name="mintingOption"
+                        value="both"
+                        checked={mintingOption === 'both'}
+                        onChange={(e) => setMintingOption(e.target.value as 'nft' | 'ip' | 'both')}
+                        className="text-gold focus:ring-gold"
+                      />
+                      <div>
+                        <div className="text-main font-medium">Both NFT + IP ⭐</div>
+                        <div className="text-muted text-sm">Complete protection (Recommended)</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
                 {/* Message */}
                 <div className="text-center mb-8 space-y-3">
                   <p className="text-main font-medium">
                     🎉 Your digital ownership proof is ready!
                   </p>
                   <p className="text-muted text-sm">
-                    This NFT will serve as tamper-proof ownership verification for your <span className="text-gold font-medium">{formData.title}</span>
+                    This will serve as tamper-proof ownership verification for your <span className="text-gold font-medium">{formData.title}</span>
                   </p>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3">
                   <button
-                    onClick={handleCloseModal}
-                    className="w-full btn-primary py-4 text-lg font-medium relative overflow-hidden group"
+                    onClick={mintNFTOnCampNetwork}
+                    disabled={isGeneratingNFT}
+                    className="w-full btn-primary py-4 text-lg font-medium relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="flex items-center justify-center gap-3">
                       <Sparkles className="w-5 h-5" />
-                      Close Preview
+                      {isGeneratingNFT ? 
+                        (mintingOption === 'both' ? 'Processing Both...' : 
+                         mintingOption === 'nft' ? 'Minting NFT...' : 'Registering IP...') : 
+                        (mintingOption === 'both' ? 'Create Both NFT + IP' : 
+                         mintingOption === 'nft' ? 'Mint NFT on BaseCamp' : 'Register IP with Origin')
+                      }
                     </div>
                     
                     {/* Button glow effect */}
