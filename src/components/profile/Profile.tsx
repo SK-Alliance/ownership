@@ -154,8 +154,13 @@ export default function Profile() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save profile');
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save profile');
+        } catch (parseError) {
+          // If we can't parse the error response, show a generic network error
+          throw new Error('Network error - please check your connection and try again');
+        }
       }
 
       const updatedProfile = await response.json();

@@ -8,6 +8,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { HydrateUserStore } from "@/components/HydrateUserStore";
 import { WalletRedirectHandler } from "@/components/WalletRedirectHandler";
 import { ChatbotWidget } from "@/components/ChatbotWidget";
+import { Toaster } from "sonner";
 
 
 // Primary fonts - using Google Fonts for reliability
@@ -59,6 +60,7 @@ export default function RootLayout({
             {children}
             <Footer />
             <ChatbotWidget />
+            <Toaster position="top-right" />
           </AuthGuard>
         </Providers>
       </body>

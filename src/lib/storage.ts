@@ -3,6 +3,7 @@ import { PinataStorage } from './pinata-storage';
 export interface UploadResult {
   url: string;
   hash: string;
+  path?: string; // For backward compatibility
 }
 
 export class StorageService {
@@ -18,7 +19,8 @@ export class StorageService {
 
     return {
       url: result.url,
-      hash: result.hash
+      hash: result.hash,
+      path: result.hash // Use hash as path for Pinata
     };
   }
 
@@ -34,14 +36,16 @@ export class StorageService {
 
     return {
       url: result.url,
-      hash: result.hash
+      hash: result.hash,
+      path: result.hash // Use hash as path for Pinata
     };
   }
 
   /**
    * Delete file from Pinata IPFS
    */
-  async deleteFile(ipfsHash: string): Promise<void> {
+  async deleteFile(bucketName: string, ipfsHash: string): Promise<void> {
+    // For Pinata, bucketName is ignored as it uses IPFS hashes
     const success = await PinataStorage.deleteFile(ipfsHash);
     if (!success) {
       throw new Error('Failed to delete file from IPFS');

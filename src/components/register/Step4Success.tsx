@@ -17,6 +17,7 @@ interface Step4Props {
   isSuccess: boolean;
   itemTitle: string;
   transactionHash?: string;
+  completionType?: 'mint_only' | 'mint_and_ip' | 'ip_only';
   onViewDashboard: () => void;
   onRegisterAnother: () => void;
 }
@@ -25,9 +26,35 @@ export const Step4Success: React.FC<Step4Props> = ({
   isSuccess = true,
   itemTitle,
   transactionHash,
+  completionType = 'mint_only',
   onViewDashboard,
   onRegisterAnother
 }) => {
+  // Get appropriate messages based on completion type
+  const getSuccessMessages = () => {
+    switch (completionType) {
+      case 'mint_only':
+        return {
+          title: 'NFT Certificate Minted!',
+          description: 'Your ownership certificate has been successfully minted as an NFT on Camp Network.',
+          badgeText: 'NFT Minted'
+        };
+      case 'mint_and_ip':
+        return {
+          title: 'NFT + IP Certificate Created!',
+          description: 'Your NFT has been minted and intellectual property protection has been established.',
+          badgeText: 'NFT + IP Created'
+        };
+      case 'ip_only':
+        return {
+          title: 'IP Certificate Created!',
+          description: 'Your intellectual property has been successfully registered and protected.',
+          badgeText: 'IP Protected'
+        };
+    }
+  };
+  
+  const messages = getSuccessMessages();
   return (
     <div className="space-y-8">
       {/* Success Header */}
@@ -35,9 +62,9 @@ export const Step4Success: React.FC<Step4Props> = ({
         <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-green/20 to-green/10 border border-green/30">
           <CheckCircle className="w-12 h-12 text-green" />
         </div>
-        <h2 className="text-3xl font-bold text-main mb-3">IP Certificate Created!</h2>
+        <h2 className="text-3xl font-bold text-main mb-3">{messages.title}</h2>
         <p className="text-lg text-muted max-w-md mx-auto">
-          Congratulations! Your intellectual property has been successfully registered and verified.
+          Congratulations! {messages.description}
         </p>
       </div>
 
@@ -55,20 +82,24 @@ export const Step4Success: React.FC<Step4Props> = ({
             </div>
           </div>
           <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted">NFT Certificate:</span>
-              <Badge className="bg-green/20 text-green border-green/30">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Minted
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted">IP Verification:</span>
-              <Badge className="bg-green/20 text-green border-green/30">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Verified
-              </Badge>
-            </div>
+            {(completionType === 'mint_only' || completionType === 'mint_and_ip') && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted">NFT Certificate:</span>
+                <Badge className="bg-green/20 text-green border-green/30">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Minted
+                </Badge>
+              </div>
+            )}
+            {(completionType === 'ip_only' || completionType === 'mint_and_ip') && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted">IP Protection:</span>
+                <Badge className="bg-green/20 text-green border-green/30">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Registered
+                </Badge>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className="text-muted">Status:</span>
               <Badge className="bg-green/20 text-green border-green/30">
@@ -79,7 +110,7 @@ export const Step4Success: React.FC<Step4Props> = ({
               <div className="flex items-center justify-between">
                 <span className="text-muted">Transaction:</span>
                 <a 
-                  href={`https://etherscan.io/tx/${transactionHash}`}
+                  href={`https://basecamp.cloud.blockscout.com/tx/${transactionHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gold hover:text-gold/80 text-xs font-mono flex items-center"

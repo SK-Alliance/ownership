@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { NFTImageGenerator } from '@/lib/nft-image-generator';
 
+type MintingOption = 'mint_only' | 'mint_and_ip' | 'ip_only';
+
 interface Step2Props {
   formData: {
     title: string;
@@ -24,11 +26,11 @@ interface Step2Props {
   imagePreview: string | null;
   userProfile: any;
   nftPreview?: string | null;
-  mintingOption?: 'create_and_mint' | 'create_only';
-  onMintingOptionChange?: (option: 'create_and_mint' | 'create_only') => void;
+  mintingOption?: MintingOption;
+  onMintingOptionChange?: (option: MintingOption) => void;
   onBack: () => void;
   onNext: () => void;
-  onMintNFT: () => Promise<void>;
+  onMintNFT: (option: MintingOption) => Promise<void>;
   isGeneratingNFT: boolean;
   isMinting?: boolean;
 }
@@ -38,7 +40,7 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
   imagePreview,
   userProfile,
   nftPreview: externalNftPreview,
-  mintingOption = 'create_and_mint',
+  mintingOption = 'mint_only',
   onMintingOptionChange,
   onBack,
   onNext,
@@ -87,12 +89,12 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
     }
   };
 
-  const handleMintAndContinue = async () => {
+  const handleOptionSelect = async (option: MintingOption) => {
     try {
-      await onMintNFT();
+      await onMintNFT(option);
       onNext();
     } catch (error) {
-      console.error('Failed to mint NFT:', error);
+      console.error('Failed to process option:', error);
       // Show error toast or handle error appropriately
     }
   };
@@ -138,36 +140,97 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center justify-between pt-6 border-t border-main/10">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          className="px-6 py-3 border-main/20 text-main hover:border-main/40"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
+      {/* Minting Options */}
+      <div className="space-y-6 pt-6 border-t border-main/10">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-main mb-2">Choose Your Action</h3>
+          <p className="text-muted text-sm">Select how you want to proceed with your ownership certificate</p>
+        </div>
 
-        <Button
-          type="button"
-          onClick={handleMintAndContinue}
-          disabled={!nftGenerated || isGeneratingNFT || isMinting}
-          className="px-8 py-3 bg-gradient-to-r from-gold to-gold/80 text-bg-main font-medium rounded-lg hover:shadow-lg hover:shadow-gold/25 transition-all duration-200 disabled:opacity-50"
-        >
-          {isGeneratingNFT || isMinting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {isMinting ? 'Minting NFT...' : 'Generating...'}
-            </>
-          ) : (
-            <>
-              <Wallet className="w-4 h-4 mr-2" />
-              Mint NFT & Continue
-            </>
-          )}
-        </Button>
+        <div className="grid gap-4 max-w-2xl mx-auto">
+          {/* Option 1: Only Mint NFT */}
+          <Button
+            type="button"
+            onClick={() => handleOptionSelect('mint_only')}
+            disabled={!nftGenerated || isGeneratingNFT || isMinting}
+            className="p-6 h-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:shadow-lg hover:shadow-blue-600/25 transition-all duration-200 disabled:opacity-50 text-left"
+          >
+            <div className="flex items-start gap-4">
+              <Wallet className="w-6 h-6 mt-1 flex-shrink-0" />
+              <div>
+                <div className="font-semibold text-lg">Only Mint NFT</div>
+                <div className="text-blue-100 text-sm mt-1">
+                  Mint your ownership certificate as an NFT on Camp Network. Quick and simple.
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 mt-1 ml-auto flex-shrink-0" />
+            </div>
+          </Button>
+
+          {/* Option 2: Mint NFT + Create IP */}
+          <Button
+            type="button"
+            onClick={() => handleOptionSelect('mint_and_ip')}
+            disabled={!nftGenerated || isGeneratingNFT || isMinting}
+            className="p-6 h-auto bg-gradient-to-r from-gold to-gold/80 text-bg-main font-medium rounded-lg hover:shadow-lg hover:shadow-gold/25 transition-all duration-200 disabled:opacity-50 text-left"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex gap-2 mt-1 flex-shrink-0">
+                <Wallet className="w-5 h-5" />
+                <Award className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="font-semibold text-lg">Mint NFT + Create IP</div>
+                <div className="text-bg-main/80 text-sm mt-1">
+                  Mint NFT and create intellectual property protection using Origin Protocol.
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 mt-1 ml-auto flex-shrink-0" />
+            </div>
+          </Button>
+
+          {/* Option 3: Only Create IP */}
+          <Button
+            type="button"
+            onClick={() => handleOptionSelect('ip_only')}
+            disabled={!nftGenerated || isGeneratingNFT || isMinting}
+            className="p-6 h-auto bg-gradient-to-r from-purple-600 to-purple-700 text-white font-medium rounded-lg hover:shadow-lg hover:shadow-purple-600/25 transition-all duration-200 disabled:opacity-50 text-left"
+          >
+            <div className="flex items-start gap-4">
+              <Award className="w-6 h-6 mt-1 flex-shrink-0" />
+              <div>
+                <div className="font-semibold text-lg">Only Create IP</div>
+                <div className="text-purple-100 text-sm mt-1">
+                  Focus on intellectual property protection using Origin Protocol's IP-NFT system.
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 mt-1 ml-auto flex-shrink-0" />
+            </div>
+          </Button>
+        </div>
+
+        {/* Back Button */}
+        <div className="flex justify-center pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="px-6 py-3 border-main/20 text-main hover:border-main/40"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
+
+        {/* Loading State */}
+        {(isGeneratingNFT || isMinting) && (
+          <div className="text-center py-4">
+            <Loader2 className="w-6 h-6 text-gold animate-spin mx-auto mb-2" />
+            <p className="text-main font-medium">
+              {isMinting ? 'Processing your request...' : 'Generating certificate...'}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

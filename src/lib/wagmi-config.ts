@@ -3,8 +3,8 @@ import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors'
 
 // BaseCamp network configuration
 export const baseCampTestnet = {
-  id: 656476,
-  name: 'BaseCamp Testnet',
+  id: 123420001114,
+  name: 'Camp Network Testnet',
   nativeCurrency: {
     decimals: 18,
     name: 'BaseCamp',
@@ -12,11 +12,11 @@ export const baseCampTestnet = {
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc.camp-network.xyz'],
+      http: ['https://rpc.basecamp.t.raas.gelato.cloud'],
     },
   },
   blockExplorers: {
-    default: { name: 'BaseCamp Explorer', url: 'https://explorer.camp-network.xyz' },
+    default: { name: 'BaseCamp Explorer', url: 'https://basecamp.cloud.blockscout.com' },
   },
   testnet: true,
 } as const

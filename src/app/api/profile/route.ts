@@ -76,6 +76,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error saving profile:', error);
+    
+    // More specific error handling for network issues
+    if (error instanceof TypeError && error.message.includes('fetch failed')) {
+      return NextResponse.json(
+        { 
+          error: 'Database connection failed. Please check your internet connection and try again.',
+          details: 'Unable to reach Supabase database'
+        },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to save profile' },
       { status: 500 }

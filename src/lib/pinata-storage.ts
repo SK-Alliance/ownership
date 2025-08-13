@@ -28,19 +28,34 @@ export class PinataStorage {
       const fileExt = file.name.split('.').pop();
       const fileName = `${itemId}-${Date.now()}.${fileExt}`;
 
-      // Upload to Pinata IPFS
-      const upload = await pinata.upload.file(file).addMetadata({
+      // Upload via our API route
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('metadata', JSON.stringify({
         name: fileName,
         keyValues: {
           type: 'nft-image',
           itemId: itemId,
           originalName: file.name
         }
+      }));
+      formData.append('uploadType', 'image');
+
+      const response = await fetch('/api/pinata/upload', {
+        method: 'POST',
+        body: formData
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+
       return {
-        url: `https://gateway.pinata.cloud/ipfs/${upload.IpfsHash}`,
-        hash: upload.IpfsHash,
+        url: result.url,
+        hash: result.hash,
         success: true
       };
 
@@ -62,18 +77,34 @@ export class PinataStorage {
     try {
       const fileName = `${itemId}-metadata-${Date.now()}.json`;
 
-      // Upload metadata JSON to Pinata
-      const upload = await pinata.upload.json(metadata).addMetadata({
-        name: fileName,
-        keyValues: {
-          type: 'nft-metadata',
-          itemId: itemId
-        }
+      // Upload metadata JSON via our API route
+      const response = await fetch('/api/pinata/json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: metadata,
+          metadata: {
+            name: fileName,
+            keyValues: {
+              type: 'nft-metadata',
+              itemId: itemId
+            }
+          }
+        })
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Metadata upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+
       return {
-        url: `https://gateway.pinata.cloud/ipfs/${upload.IpfsHash}`,
-        hash: upload.IpfsHash,
+        url: result.url,
+        hash: result.hash,
         success: true
       };
 
@@ -99,19 +130,34 @@ export class PinataStorage {
     try {
       const fileName = `${documentType}-${userWallet}-${Date.now()}-${file.name}`;
 
-      // Upload document to Pinata
-      const upload = await pinata.upload.file(file).addMetadata({
+      // Upload document via our API route
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('metadata', JSON.stringify({
         name: fileName,
         keyValues: {
           type: `document-${documentType}`,
           userWallet: userWallet,
           originalName: file.name
         }
+      }));
+      formData.append('uploadType', 'document');
+
+      const response = await fetch('/api/pinata/upload', {
+        method: 'POST',
+        body: formData
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Document upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+
       return {
-        url: `https://gateway.pinata.cloud/ipfs/${upload.IpfsHash}`,
-        hash: upload.IpfsHash,
+        url: result.url,
+        hash: result.hash,
         success: true
       };
 
@@ -244,7 +290,7 @@ export class PinataStorage {
    */
   static async deleteFile(ipfsHash: string): Promise<boolean> {
     try {
-      await pinata.unpin([ipfsHash]);
+      await pinata.unpin(ipfsHash);
       return true;
     } catch (error) {
       console.error('Pinata delete error:', error);

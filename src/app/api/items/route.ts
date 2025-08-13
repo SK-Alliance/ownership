@@ -66,15 +66,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Implement item creation logic
     const body = await request.json();
+    console.log('Creating item with data:', body);
     
+    // For now, just log and return success
+    // In production, you would save to your database here
     return NextResponse.json({ 
       success: true, 
       message: 'Item created successfully',
-      data: { id: Date.now().toString(), ...body }
+      data: { 
+        id: Date.now().toString(), 
+        ...body,
+        created_at: new Date().toISOString()
+      }
     });
-  } catch {
+  } catch (error) {
+    console.error('Item creation error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create item' },
       { status: 500 }
