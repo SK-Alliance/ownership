@@ -273,7 +273,7 @@ export default function Dashboard() {
                 className="mb-8"
               >
                 {/* NFT Cards */}
-                {items.some(item => item.metadata_url || item.nft_certificate_url) && (
+                {items.some(item => item.nft_certificate_url) && (
                   <div className="mb-8">
                     <h3 className="text-xl font-semibold text-main mb-4 flex items-center gap-2">
                       <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
@@ -281,13 +281,13 @@ export default function Dashboard() {
                     </h3>
                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                       {items
-                        .filter(item => item.metadata_url || item.nft_certificate_url)
+                        .filter(item => item.nft_certificate_url)
                         .map((item, index) => (
                           <NFTCard
                             key={`nft-${item.id}`}
                             title={item.title}
                             imageUrl={item.image_url || '/placeholder-nft.jpg'}
-                            metadataUrl={item.metadata_url || item.nft_certificate_url || ''}
+                            metadataUrl={item.nft_certificate_url || ''}
                             contractAddress="0xf6910b20bf77f85BC4bf5E006F6103196b003085"
                             explorerUrl="https://basecamp.cloud.blockscout.com"
                             status="minted"

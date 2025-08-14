@@ -67,19 +67,17 @@ export function RegisterIPOnly({ imageFile, itemData, onSuccess, onError }: Regi
       let result;
       if (auth.origin) {
         result = await auth.origin.mintFile(imageFile, ipMetadata, licenseTerms);
-      } else if (auth.client) {
-        result = await auth.client.mintFile(imageFile, ipMetadata, licenseTerms);
-      } else if (auth.sdk) {
-        result = await auth.sdk.mintFile(imageFile, ipMetadata, licenseTerms);
       } else {
         throw new Error('Origin SDK client not found. Available methods: ' + Object.keys(auth).join(', '));
       }
       
       console.log('✅ IP registration successful:', result);
       
+      // Handle result based on its actual structure
+      const resultData = result as any; // Allow any here since we're dealing with external library types
       onSuccess?.({
-        ipId: result.id || `ip_${Date.now()}`,
-        transactionHash: result.transactionHash
+        ipId: resultData?.id || `ip_${Date.now()}`,
+        transactionHash: resultData?.transactionHash || 'unknown'
       });
       
     } catch (error) {

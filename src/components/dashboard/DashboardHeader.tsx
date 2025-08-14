@@ -9,15 +9,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getTierColor } from '@/data/dashboard';
 import { Shield, Trophy, Calendar } from 'lucide-react';
 
-// Extend Window interface for ethereum
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string }) => Promise<string[]>;
-    };
-  }
-}
-
 interface DashboardUser {
   walletAddress: string;
   username: string;
@@ -54,7 +45,7 @@ export default function DashboardHeader() {
         // Method 3: Try window.ethereum as fallback
         if (!walletAddress && typeof window !== 'undefined' && window.ethereum) {
           try {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            const accounts = await (window.ethereum as { request: (args: { method: string }) => Promise<string[]> }).request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
               walletAddress = accounts[0];
             }

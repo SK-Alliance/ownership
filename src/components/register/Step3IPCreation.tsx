@@ -8,21 +8,21 @@ import {
   Upload, 
   FileText, 
   CreditCard, 
-  ArrowRight, 
   ArrowLeft,
   Loader2,
   Zap,
-  CheckCircle,
   Info
 } from 'lucide-react';
 
+interface FormData {
+  billFile: File | null;
+  idFile: File | null;
+}
+
 interface Step3Props {
-  formData: {
-    billFile: File | null;
-    idFile: File | null;
-  };
+  formData: FormData;
   userCredits: number;
-  onFormDataChange: (data: any) => void;
+  onFormDataChange: (data: FormData) => void;
   onBack: () => void;
   onNext: () => void;
   onVerifyDocuments: () => Promise<{ success: boolean; message?: string }>;
@@ -40,7 +40,7 @@ export const Step3IPCreation: React.FC<Step3Props> = ({
 }) => {
   const [billPreview, setBillPreview] = useState<string | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
-  const [verificationStarted, setVerificationStarted] = useState(false);
+  const [_verificationStarted, setVerificationStarted] = useState(false);
 
   const handleFileUpload = (field: 'billFile' | 'idFile', file: File) => {
     onFormDataChange({ ...formData, [field]: file });
@@ -187,7 +187,7 @@ export const Step3IPCreation: React.FC<Step3Props> = ({
               >
                 <Upload className="w-8 h-8 text-green mb-2" />
                 <span className="text-main font-medium">Upload Identity Document</span>
-                <span className="text-muted text-sm">Driver's License, Passport, etc.</span>
+                <span className="text-muted text-sm">Driver License, Passport, etc.</span>
               </label>
             )}
             <input

@@ -23,7 +23,6 @@ interface Step4Props {
 }
 
 export const Step4Success: React.FC<Step4Props> = ({
-  isSuccess = true,
   itemTitle,
   transactionHash,
   completionType = 'mint_only',
@@ -127,7 +126,7 @@ export const Step4Success: React.FC<Step4Props> = ({
         <div className="p-6 bg-main/5 border border-main/10 rounded-xl">
           <h3 className="font-semibold text-main mb-3 flex items-center">
             <Sparkles className="w-5 h-5 mr-2 text-gold" />
-            What's Next?
+            Whats Next?
           </h3>
           <div className="space-y-3 text-sm text-muted">
             <div className="flex items-start gap-3">
@@ -140,7 +139,7 @@ export const Step4Success: React.FC<Step4Props> = ({
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle className="w-4 h-4 text-green mt-0.5 flex-shrink-0" />
-              <span>Track your item's provenance and history</span>
+              <span>Track your item provenance and history</span>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle className="w-4 h-4 text-green mt-0.5 flex-shrink-0" />

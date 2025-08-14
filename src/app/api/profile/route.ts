@@ -13,7 +13,7 @@ interface ProfileRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: ProfileRequest = await request.json();
-    const { username, fullName, email, walletAddress } = body;
+    const { username, email, walletAddress } = body;
 
     // Validate required fields
     if (!walletAddress) {

@@ -135,17 +135,17 @@ export function MintBothNFTAndIP({ imageFile, itemData, onSuccess, onError }: Mi
         let result;
         if (auth.origin) {
           result = await auth.origin.mintFile(imageFile, ipMetadata, licenseTerms);
-        } else if (auth.client) {
-          result = await auth.client.mintFile(imageFile, ipMetadata, licenseTerms);
         } else {
           throw new Error('Origin SDK client not found');
         }
         
         console.log('✅ IP registration successful:', result);
         
+        // Handle result based on its actual structure
+        const resultData = result as any; // Allow any here since we're dealing with external library types
         const ipRes = {
-          ipId: result.id || `ip_${Date.now()}`,
-          transactionHash: result.transactionHash
+          ipId: resultData?.id || `ip_${Date.now()}`,
+          transactionHash: resultData?.transactionHash || 'unknown'
         };
         setIpResult(ipRes);
         

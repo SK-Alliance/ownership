@@ -7,7 +7,6 @@ import { useAccount } from 'wagmi';
 import { toast } from 'sonner';
 import { uploadFileToIPFS } from '@/lib/utils/upload';
 import { Loader2, Shield } from 'lucide-react';
-import { useBaseCampChain } from '@/lib/utils/chain';
 
 interface MintButtonProps {
   image: File | null;
@@ -23,6 +22,16 @@ interface LicenseTerms {
   paymentToken: string;
 }
 
+interface OriginSDK {
+  registerIP?: (params: { metadata: unknown; license: unknown }) => Promise<unknown>;
+  createIP?: (params: { metadata: unknown; license: unknown }) => Promise<unknown>;
+  mintFile?: (file: File, metadata: unknown, license: unknown) => Promise<unknown>;
+}
+
+interface AuthWithOrigin {
+  origin?: OriginSDK;
+}
+
 export const MintButton: React.FC<MintButtonProps> = ({
   image,
   address,
@@ -34,7 +43,6 @@ export const MintButton: React.FC<MintButtonProps> = ({
   
   const auth = useAuth();
   const { isConnected } = useAccount();
-  const { isOnBaseCamp, currentChain } = useBaseCampChain();
 
   // Define license terms - can be customized
   const licenseTerms: LicenseTerms = {
@@ -52,7 +60,7 @@ export const MintButton: React.FC<MintButtonProps> = ({
     }
 
     // Check if origin is instantiated
-    if (!auth || typeof auth !== 'object' || !('origin' in auth) || !auth.origin) {
+    if (!auth || typeof auth !== 'object' || !('origin' in auth) || !(auth as AuthWithOrigin).origin) {
       toast.error('Origin SDK not initialized. Please try connecting again.');
       return;
     }
@@ -127,22 +135,23 @@ export const MintButton: React.FC<MintButtonProps> = ({
       });
 
       // Register IP using Origin SDK - try different function names
-      console.log('Available Origin functions:', Object.keys((auth as any).origin || {}));
+      const authWithOrigin = auth as AuthWithOrigin;
+      console.log('Available Origin functions:', Object.keys(authWithOrigin.origin || {}));
       
       let result;
-      if ((auth as any).origin.registerIP) {
-        result = await (auth as any).origin.registerIP({
+      if (authWithOrigin.origin?.registerIP) {
+        result = await authWithOrigin.origin.registerIP({
           metadata: metadata,
           license: license
         });
-      } else if ((auth as any).origin.createIP) {
-        result = await (auth as any).origin.createIP({
+      } else if (authWithOrigin.origin?.createIP) {
+        result = await authWithOrigin.origin.createIP({
           metadata: metadata,
           license: license
         });
-      } else if ((auth as any).origin.mintFile) {
+      } else if (authWithOrigin.origin?.mintFile) {
         // Fallback to original mintFile approach
-        result = await (auth as any).origin.mintFile(imageFile, metadata, license);
+        result = await authWithOrigin.origin.mintFile(imageFile, metadata, license);
       } else {
         throw new Error('No IP registration function found in Origin SDK');
       }

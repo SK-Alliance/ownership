@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   Package, 
   Tag, 
@@ -14,16 +13,18 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 
+interface FormData {
+  title: string;
+  category: string;
+  brand: string;
+  serialNumber: string;
+  est_value: number;
+}
+
 interface Step1Props {
-  formData: {
-    title: string;
-    category: string;
-    brand: string;
-    serialNumber: string;
-    est_value: number;
-  };
+  formData: FormData;
   imagePreview: string | null;
-  onFormDataChange: (data: any) => void;
+  onFormDataChange: (data: FormData) => void;
   onImageChange: (file: File) => void;
   onNext: () => void;
   isValid: boolean;

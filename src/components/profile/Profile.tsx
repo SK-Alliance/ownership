@@ -6,15 +6,6 @@ import { useAuthState, useAuth, useProvider } from '@campnetwork/origin/react';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Wallet, Edit3, Save, X, AlertCircle } from 'lucide-react';
 
-// Extend Window interface for ethereum
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string }) => Promise<string[]>;
-    };
-  }
-}
-
 interface UserProfile {
   username: string;
   fullName: string;
@@ -159,7 +150,7 @@ export default function Profile() {
         try {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to save profile');
-        } catch (parseError) {
+        } catch {
           // If we can't parse the error response, show a generic network error
           throw new Error('Network error - please check your connection and try again');
         }

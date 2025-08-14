@@ -2,13 +2,6 @@ import { useSwitchChain, useAccount } from 'wagmi';
 import { baseCampTestnet } from '@/lib/wagmi-config';
 import { toast } from 'sonner';
 
-// Extend Window interface for ethereum
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
-
 export function useBaseCampChain() {
   const { switchChain } = useSwitchChain();
   const { chain } = useAccount();
@@ -57,11 +50,12 @@ export function useBaseCampChain() {
       await switchChain({ chainId: baseCampTestnet.id });
       toast.success('Switched to Camp Network Testnet');
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to switch chain:', error);
       
       // If the network doesn't exist, try to add it first
-      if (error?.code === 4902 || error?.message?.includes('Unrecognized chain ID')) {
+      const errorObj = error as { code?: number; message?: string };
+      if (errorObj?.code === 4902 || errorObj?.message?.includes('Unrecognized chain ID')) {
         toast.info('Adding Camp Network to your wallet...');
         const added = await addBaseCampNetwork();
         if (added) {

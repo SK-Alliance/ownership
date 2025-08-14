@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle, Circle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -11,7 +11,6 @@ interface StepIndicatorProps {
 
 export const StepIndicator: React.FC<StepIndicatorProps> = ({
   currentStep,
-  totalSteps,
   stepTitles
 }) => {
   return (

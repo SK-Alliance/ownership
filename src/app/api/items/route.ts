@@ -43,8 +43,6 @@ export async function GET(request: NextRequest) {
         *,
         owner:users!items_owner_id_fkey(wallet_address, display_name)
       `)
-      .eq('users.wallet_address', walletAddress)
-      .select('*')
       .eq('owner_id', user.id)
       .order('created_at', { ascending: false });
 

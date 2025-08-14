@@ -32,7 +32,7 @@ export default function MintPage() {
   const { address, isConnected } = useAccount();
   const { writeContract } = useWriteContract();
   const auth = useAuth();
-  const { isOnBaseCamp, switchToBaseCamp, addBaseCampNetwork, currentChain } = useBaseCampChain();
+  const { isOnBaseCamp, switchToBaseCamp, currentChain } = useBaseCampChain();
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

@@ -46,11 +46,10 @@ Auctor uses a **hybrid onchain–offchain** architecture:
 
 ## 🔗 Tech Stack
 - **Frontend:** Next.js (latest) + Tailwind + Framer Motion + shadcn/ui
-- **Backend:** Node.js / Express
 - **Blockchain:** Camp Network (Basecamp Testnet) + Wagmi
 - **Storage:** IPFS via Pinata
 - **Database/Auth:** Supabase
-- **AI:** Tesseract OCR / Google Vision API + LLM summarization
+- **AI/Verification:** GPT4.0 Powered Agentic ChatBots & Persona
 
 ---
 
@@ -73,7 +72,7 @@ We used:
 ---
 
 ## 📹 Demo Video
-[Watch the Demo](x.com/0xshubh4m)  
+[Watch the Demo](https://x.com/smilewithkhushi/status/1955922296654454889)  
 
 ---
 

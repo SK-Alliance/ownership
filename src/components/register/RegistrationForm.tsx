@@ -18,6 +18,23 @@ import { Step2NFTPreview } from './Step2NFTPreview';
 import { Step3IPCreation } from './Step3IPCreation';
 import { Step4Success } from './Step4Success';
 
+// Type definitions
+interface UserProfile {
+  display_name?: string;
+  username?: string;
+  wallet_address?: string;
+}
+
+interface OriginSDK {
+  registerIP?: (params: { metadata: unknown; license: unknown }) => Promise<unknown>;
+  createIP?: (params: { metadata: unknown; license: unknown }) => Promise<unknown>;
+  mintFile?: (file: File, metadata: unknown, license: unknown) => Promise<unknown>;
+}
+
+interface AuthWithOrigin {
+  origin?: OriginSDK;
+}
+
 export default function RegistrationForm() {
   const router = useRouter();
   
@@ -38,11 +55,7 @@ export default function RegistrationForm() {
   
   // UI states
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<{
-    display_name?: string;
-    username?: string;
-    wallet_address?: string;
-  } | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isGeneratingNFT, setIsGeneratingNFT] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
@@ -56,7 +69,7 @@ export default function RegistrationForm() {
   const { isAuthenticated, address, user } = useWalletConnection();
   const { authenticated } = useAuthState();
   const auth = useAuth();
-  const { address: wagmiAddress, isConnected } = useAccount();
+  const { address: isConnected } = useAccount();
   const { writeContract } = useWriteContract();
   const { isOnBaseCamp, switchToBaseCamp, currentChain } = useBaseCampChain();
 
@@ -134,7 +147,7 @@ export default function RegistrationForm() {
     };
     
     generateNFTPreview();
-  }, [formData.title, imagePreview, userProfile, user]);
+  }, [formData.title, formData.serialNumber, imagePreview, userProfile, user]);
 
   // Step handlers
   const handleImageChange = (file: File) => {
@@ -340,22 +353,23 @@ export default function RegistrationForm() {
           console.log('Registering IP-NFT with Origin SDK...', { ipMetadata, license });
 
           // Register IP using Origin SDK - try different function names
-          console.log('Available Origin functions:', Object.keys((auth as any).origin || {}));
+          const authWithOrigin = auth as AuthWithOrigin;
+          console.log('Available Origin functions:', Object.keys(authWithOrigin.origin || {}));
           
           // Try different possible function names
-          if ((auth as any).origin.registerIP) {
-            ipResult = await (auth as any).origin.registerIP({
+          if (authWithOrigin.origin?.registerIP) {
+            ipResult = await authWithOrigin.origin.registerIP({
               metadata: ipMetadata,
               license: license
             });
-          } else if ((auth as any).origin.createIP) {
-            ipResult = await (auth as any).origin.createIP({
+          } else if (authWithOrigin.origin?.createIP) {
+            ipResult = await authWithOrigin.origin.createIP({
               metadata: ipMetadata,
               license: license
             });
-          } else if ((auth as any).origin.mintFile) {
+          } else if (authWithOrigin.origin?.mintFile) {
             // Fallback to original mintFile approach
-            ipResult = await (auth as any).origin.mintFile(imageFile, ipMetadata, license);
+            ipResult = await authWithOrigin.origin.mintFile(imageFile, ipMetadata, license);
           } else {
             throw new Error('No IP registration function found in Origin SDK');
           }
@@ -478,7 +492,8 @@ export default function RegistrationForm() {
           console.log('Registering IP with Origin SDK...', { metadata, license });
 
           // Register IP using Origin SDK
-          const ipResult = await (auth as any).origin.mintFile(imageFile, metadata, license);
+          const authWithOrigin = auth as AuthWithOrigin;
+          const ipResult = await authWithOrigin.origin?.mintFile?.(imageFile, metadata, license);
           
           console.log('✅ IP registered with Origin SDK:', ipResult);
 
@@ -625,7 +640,7 @@ export default function RegistrationForm() {
               <Step1ItemInformation
                 formData={formData}
                 imagePreview={imagePreview}
-                onFormDataChange={setFormData}
+                onFormDataChange={(data: any) => setFormData(data)}
                 onImageChange={handleImageChange}
                 onNext={nextStep}
                 isValid={validateStep1()}
@@ -652,7 +667,7 @@ export default function RegistrationForm() {
               <Step3IPCreation
                 formData={formData}
                 userCredits={5}
-                onFormDataChange={setFormData}
+                onFormDataChange={(data: any) => setFormData(data)}
                 onBack={prevStep}
                 onNext={nextStep}
                 onVerifyDocuments={handleVerifyDocuments}

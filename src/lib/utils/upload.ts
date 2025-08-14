@@ -1,10 +1,3 @@
-import { PinataSDK } from "pinata";
-
-const pinata = new PinataSDK({
-  pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT || "",
-  pinataGateway: "gateway.pinatacloud.io",
-});
-
 export interface UploadResult {
   success: boolean;
   ipfsHash?: string;
@@ -22,8 +15,22 @@ export async function uploadFileToIPFS(file: File): Promise<UploadResult> {
 
     console.log("Uploading file to IPFS...", file.name);
     
-    const upload = await pinata.upload.file(file);
-    const ipfsHash = upload.IpfsHash;
+    // Use API route instead of direct Pinata SDK
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('uploadType', 'file');
+
+    const response = await fetch('/api/pinata/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload file to IPFS');
+    }
+
+    const result = await response.json();
+    const ipfsHash = result.IpfsHash;
     
     // Return URL format (not URI) as required by Origin SDK
     const ipfsUrl = `https://gateway.pinatacloud.io/ipfs/${ipfsHash}`;
@@ -48,8 +55,21 @@ export async function uploadMetadataToIPFS(metadata: object): Promise<UploadResu
   try {
     console.log("Uploading metadata to IPFS...", metadata);
     
-    const upload = await pinata.upload.json(metadata);
-    const ipfsHash = upload.IpfsHash;
+    // Use API route instead of direct Pinata SDK
+    const response = await fetch('/api/pinata/json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(metadata)
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload metadata to IPFS');
+    }
+
+    const result = await response.json();
+    const ipfsHash = result.IpfsHash;
     
     // Return URL format for metadata
     const ipfsUrl = `https://gateway.pinatacloud.io/ipfs/${ipfsHash}`;

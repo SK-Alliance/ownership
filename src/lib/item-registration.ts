@@ -71,8 +71,12 @@ export class ItemRegistrationService {
         console.error('Database insert error:', insertError);
         // Cleanup uploaded files on database error
         try {
-          await storageService.deleteFile('proofs', billUpload.path);
-          await storageService.deleteFile('ids', idUpload.path);
+          if (billUpload.path) {
+            await storageService.deleteFile('proofs', billUpload.path);
+          }
+          if (idUpload.path) {
+            await storageService.deleteFile('ids', idUpload.path);
+          }
         } catch (cleanupError) {
           console.error('Cleanup error:', cleanupError);
         }

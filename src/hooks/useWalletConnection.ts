@@ -20,7 +20,7 @@ export const useWalletConnection = () => {
     try {
       if (auth && typeof auth === 'object') {
         // Try different possible property names
-        const authObj = auth as Record<string, unknown>;
+        const authObj = auth as unknown as Record<string, unknown>;
         if (authObj.address && typeof authObj.address === 'string') return authObj.address;
         if (authObj.account && typeof authObj.account === 'string') return authObj.account;
         if (authObj.walletAddress && typeof authObj.walletAddress === 'string') return authObj.walletAddress;

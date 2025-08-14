@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -15,6 +15,12 @@ import { NFTImageGenerator } from '@/lib/nft-image-generator';
 
 type MintingOption = 'mint_only' | 'mint_and_ip' | 'ip_only';
 
+interface UserProfile {
+  display_name?: string;
+  username?: string;
+  wallet_address?: string;
+}
+
 interface Step2Props {
   formData: {
     title: string;
@@ -24,7 +30,7 @@ interface Step2Props {
     est_value: number;
   };
   imagePreview: string | null;
-  userProfile: any;
+  userProfile: UserProfile | null;
   nftPreview?: string | null;
   mintingOption?: MintingOption;
   onMintingOptionChange?: (option: MintingOption) => void;
@@ -40,8 +46,6 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
   imagePreview,
   userProfile,
   nftPreview: externalNftPreview,
-  mintingOption = 'mint_only',
-  onMintingOptionChange,
   onBack,
   onNext,
   onMintNFT,
@@ -61,11 +65,7 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
   }, [externalNftPreview]);
 
   // Generate NFT preview when component mounts or data changes
-  useEffect(() => {
-    generateNFTPreview();
-  }, [formData, imagePreview, userProfile]);
-
-  const generateNFTPreview = async () => {
+  const generateNFTPreview = useCallback(async () => {
     if (!imagePreview || !formData.title || !userProfile?.display_name) {
       return;
     }
@@ -75,7 +75,7 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
       const nftImageUrl = await NFTImageGenerator.generateNFTImage({
         itemImage: imagePreview,
         itemName: formData.title,
-        ownerName: userProfile.display_name
+        ownerName: userProfile?.display_name || 'Unknown Owner'
       });
 
       if (nftImageUrl) {
@@ -87,7 +87,11 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [imagePreview, formData.title, userProfile?.display_name]);
+
+  useEffect(() => {
+    generateNFTPreview();
+  }, [generateNFTPreview]);
 
   const handleOptionSelect = async (option: MintingOption) => {
     try {
@@ -201,7 +205,7 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
               <div>
                 <div className="font-semibold text-lg">Only Create IP</div>
                 <div className="text-purple-100 text-sm mt-1">
-                  Focus on intellectual property protection using Origin Protocol's IP-NFT system.
+                  Focus on intellectual property protection using Origin Protocol&apos;s IP-NFT system.
                 </div>
               </div>
               <ArrowRight className="w-5 h-5 mt-1 ml-auto flex-shrink-0" />
