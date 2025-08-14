@@ -13,7 +13,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Get user profile from database
     const { data: profile, error } = await supabase
-      .from('user_profiles')
+      .from('users')
       .select('*')
       .eq('wallet_address', address.toLowerCase())
       .single();
@@ -27,8 +27,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     return NextResponse.json({
-      username: profile.username || '',
-      fullName: profile.full_name || '',
+      username: profile.display_name || '',
+      fullName: profile.display_name || '',
       email: profile.email || '',
       walletAddress: profile.wallet_address,
       xpPoints: profile.xp_points || 0,

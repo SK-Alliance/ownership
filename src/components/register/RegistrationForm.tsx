@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Shield, Upload, Image as ImageIcon, X, Sparkles } from 'lucide-react';
 import { NFTImageGenerator } from '@/lib/nft-image-generator';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
@@ -21,7 +22,7 @@ export default function RegistrationForm() {
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [, setNftPreview] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<{ fullName?: string; username?: string; walletAddress?: string } | null>(null);
   const [isGeneratingNFT, setIsGeneratingNFT] = useState(false);
   const [showNFTModal, setShowNFTModal] = useState(false);
   const [finalNFTImage, setFinalNFTImage] = useState<string | null>(null);
@@ -218,6 +219,37 @@ export default function RegistrationForm() {
             };
             
             console.log('✅ NFT minting transaction submitted');
+
+            // Register item in database with all the details
+            try {
+              console.log('💾 Registering item in database...');
+              const dbFormData = new FormData();
+              dbFormData.append('title', formData.title);
+              dbFormData.append('category', formData.category);
+              dbFormData.append('est_value', (formData.estimatedValue || 0).toString());
+              dbFormData.append('wallet_address', userAddress);
+              dbFormData.append('imageUrl', uploadResult.imageUrl);
+              dbFormData.append('metadata_url', uploadResult.metadataUrl);
+              dbFormData.append('serial_number', formData.serialNumber || `SN-${Date.now()}`);
+              dbFormData.append('brand', formData.brand || 'Unknown');
+
+              const response = await fetch('/api/items/register', {
+                method: 'POST',
+                body: dbFormData,
+              });
+
+              const result = await response.json();
+              
+              if (!result.success) {
+                console.warn('Database registration failed:', result.error);
+                // Don't fail the entire process, just log the warning
+              } else {
+                console.log('✅ Item registered in database successfully');
+              }
+            } catch (dbError) {
+              console.warn('Database registration error:', dbError);
+              // Don't fail the entire NFT process for database errors
+            }
           } catch (error) {
             console.error('NFT minting failed:', error);
             nftResult = { success: false, error: error instanceof Error ? error.message : 'NFT minting failed' };
@@ -230,6 +262,11 @@ export default function RegistrationForm() {
       // Option 2 & 3: IP Registration via Origin SDK
       if (mintingOption === 'ip' || mintingOption === 'both') {
         console.log('🏛️ Registering IP via Origin SDK...');
+        
+        // Debug: Check what's available in auth
+        console.log('Auth object:', auth);
+        console.log('Auth keys:', auth ? Object.keys(auth) : 'null');
+        console.log('Auth.origin available:', !!auth?.origin);
         
         if (authenticated && auth?.origin) {
           try {
@@ -249,7 +286,17 @@ export default function RegistrationForm() {
             };
 
             // Convert image to File for Origin SDK
-            const result = await auth.origin.mintFile(file, ipMetadata, licenseTerms);
+            // Try different possible auth properties
+            let result;
+            if (auth.origin) {
+              result = await auth.origin.mintFile(file, ipMetadata, licenseTerms);
+            } else if (auth.client) {
+              result = await auth.client.mintFile(file, ipMetadata, licenseTerms);
+            } else if (auth.sdk) {
+              result = await auth.sdk.mintFile(file, ipMetadata, licenseTerms);
+            } else {
+              throw new Error('Origin SDK client not found in auth object. Available methods: ' + Object.keys(auth).join(', '));
+            }
             
             ipResult = {
               success: true,
@@ -424,9 +471,11 @@ export default function RegistrationForm() {
                     ) : (
                       <div className="relative group">
                         <div className="w-full h-48 bg-surface/30 border border-main/20 rounded-button overflow-hidden">
-                          <img
+                          <Image
                             src={imagePreview}
                             alt="Item preview"
+                            width={400}
+                            height={192}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -444,7 +493,7 @@ export default function RegistrationForm() {
                               const input = document.createElement('input');
                               input.type = 'file';
                               input.accept = 'image/png,image/jpeg,image/jpg';
-                              input.onchange = (e) => handleFileChange(e as any);
+                              input.onchange = (e) => handleFileChange(e as React.ChangeEvent<HTMLInputElement>);
                               input.click();
                             }}
                             className="text-gold hover:text-gold/80 text-sm underline"
@@ -656,7 +705,7 @@ export default function RegistrationForm() {
 
                 {/* Footer Note */}
                 <p className="text-xs text-muted/70 mt-4">
-                  Please don't close this window during generation
+                  Please don&apos;t close this window during generation
                 </p>
               </div>
             </div>
@@ -717,9 +766,11 @@ export default function RegistrationForm() {
                 {/* NFT Preview */}
                 <div className="text-center mb-8">
                   <div className="inline-block p-4 rounded-card border border-gold/20 bg-gradient-to-br from-gold/5 to-transparent">
-                    <img
+                    <Image
                       src={finalNFTImage}
                       alt="Final NFT Certificate"
+                      width={300}
+                      height={300}
                       className="w-full max-w-xs rounded-button shadow-lg"
                     />
                   </div>

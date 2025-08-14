@@ -7,6 +7,8 @@ import DashboardHeader from './DashboardHeader';
 import ItemCard from './ItemCard';
 import { ItemsTable } from './ItemsTable';
 import EmptyState from './EmptyState';
+import { NFTCard } from './NFTCard';
+import { IPCard } from './IPCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
@@ -18,7 +20,7 @@ type SortType = 'newest' | 'oldest' | 'value-high' | 'value-low';
 
 export default function Dashboard() {
   const { authenticated } = useAuthState();
-  const { address, isConnected } = useWalletConnection();
+  const { isConnected } = useWalletConnection();
   const { items, isLoading, error, refetch } = useUserItems();
   
   const [filter, setFilter] = useState<FilterType>('all');
@@ -39,11 +41,11 @@ export default function Dashboard() {
       registrationDate: item.created_at,
       xp: item.status === 'verified' ? 100 : item.status === 'pending_verification' ? 50 : 0,
       coOwners: 1,
-      imageUrl: item.item_image_url || '/placeholder-item.jpg',
+      imageUrl: item.image_url || '/placeholder-item.jpg',
       estimatedValue: item.estimated_value,
       serialNumber: item.serial_number,
       brand: item.brand,
-      itemImageUrl: item.item_image_url,
+      itemImageUrl: item.image_url,
       billUrl: item.bill_url,
       idUrl: item.id_url,
       nftCertificateUrl: item.nft_certificate_url,
@@ -55,11 +57,6 @@ export default function Dashboard() {
   const filteredItems = dashboardItems
     .filter(item => {
       if (filter === 'all') return true;
-      const statusMapping = {
-        'pending_verification': 'pending',
-        'verified': 'verified',
-        'rejected': 'rejected'
-      };
       const mappedFilter = filter === 'pending_verification' ? 'pending' : filter;
       return item.verificationStatus === mappedFilter;
     })
@@ -86,11 +83,6 @@ export default function Dashboard() {
 
   const getFilterCount = (filterType: FilterType) => {
     if (filterType === 'all') return dashboardItems.length;
-    const statusMapping = {
-      'pending_verification': 'pending',
-      'verified': 'verified',
-      'rejected': 'rejected'
-    };
     const mappedFilter = filterType === 'pending_verification' ? 'pending' : filterType;
     return dashboardItems.filter(item => item.verificationStatus === mappedFilter).length;
   };
@@ -271,6 +263,74 @@ export default function Dashboard() {
                 </select>
               </div>
             </div>
+
+            {/* NFT & IP Cards Section */}
+            {authenticated && isConnected && items.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="mb-8"
+              >
+                {/* NFT Cards */}
+                {items.some(item => item.metadata_url || item.nft_certificate_url) && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold text-main mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                      NFT Certificates Minted
+                    </h3>
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                      {items
+                        .filter(item => item.metadata_url || item.nft_certificate_url)
+                        .map((item, index) => (
+                          <NFTCard
+                            key={`nft-${item.id}`}
+                            title={item.title}
+                            imageUrl={item.image_url || '/placeholder-nft.jpg'}
+                            metadataUrl={item.metadata_url || item.nft_certificate_url || ''}
+                            contractAddress="0xf6910b20bf77f85BC4bf5E006F6103196b003085"
+                            explorerUrl="https://basecamp.cloud.blockscout.com"
+                            status="minted"
+                            mintedAt={item.created_at}
+                            index={index}
+                          />
+                        ))
+                      }
+                    </div>
+                  </div>
+                )}
+
+                {/* IP Cards - Mock data for demonstration */}
+                {items.some(item => item.status === 'verified') && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold text-main mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                      IP Protection Created
+                    </h3>
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                      {items
+                        .filter(item => item.status === 'verified')
+                        .slice(0, 3) // Show only first 3 for demo
+                        .map((item, index) => (
+                          <IPCard
+                            key={`ip-${item.id}`}
+                            title={item.title}
+                            ipType={item.category === 'electronics' ? 'patent' : 
+                                   item.category === 'art' ? 'copyright' : 
+                                   item.category === 'jewelry' ? 'design' : 'trademark'}
+                            status="registered"
+                            registeredAt={item.created_at}
+                            ipId={`IP-${item.serial_number}`}
+                            explorerUrl="https://basecamp.cloud.blockscout.com"
+                            index={index}
+                          />
+                        ))
+                      }
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
 
             {/* Items Display */}
             {filteredItems.length === 0 ? (

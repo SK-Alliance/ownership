@@ -34,7 +34,7 @@ export default function NotFound() {
               Page Not Found
             </h2>
             <p className="text-lg text-muted max-w-2xl mx-auto">
-              The page you're looking for has vanished into the digital void. 
+              The page you&apos;re looking for has vanished into the digital void. 
               It might have been moved, deleted, or never existed in the first place.
             </p>
           </div>
@@ -71,7 +71,7 @@ export default function NotFound() {
                 <div>
                   <h3 className="text-xl font-semibold text-main mb-2">Lost in the Network</h3>
                   <p className="text-muted text-sm">
-                    This digital asset couldn't be verified or located in our provenance network.
+                    This digital asset couldn&apos;t be verified or located in our provenance network.
                   </p>
                 </div>
               </div>

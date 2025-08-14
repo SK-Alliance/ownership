@@ -6,13 +6,15 @@ import { useAuthState, useAuth, useProvider } from '@campnetwork/origin/react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { getUserTier, getTierColor } from '@/data/dashboard';
+import { getTierColor } from '@/data/dashboard';
 import { Shield, Trophy, Calendar } from 'lucide-react';
 
 // Extend Window interface for ethereum
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: {
+      request: (args: { method: string }) => Promise<string[]>;
+    };
   }
 }
 

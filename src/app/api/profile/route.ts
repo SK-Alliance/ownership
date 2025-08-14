@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
     // Check if username is already taken (if provided)
     if (username) {
       const { data: existingUsername, error: usernameError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .select('wallet_address')
-        .eq('username', username.toLowerCase())
+        .eq('display_name', username.toLowerCase())
         .neq('wallet_address', walletAddress.toLowerCase())
         .single();
 
@@ -48,11 +48,10 @@ export async function POST(request: NextRequest) {
 
     // Upsert profile data
     const { data: profile, error } = await supabase
-      .from('user_profiles')
+      .from('users')
       .upsert({
         wallet_address: walletAddress.toLowerCase(),
-        username: username?.toLowerCase() || null,
-        full_name: fullName || null,
+        display_name: username || fullName || null,
         email: email?.toLowerCase() || null,
         xp_points: 0, // Initialize with 0 XP for new profiles
         updated_at: new Date().toISOString(),
@@ -67,8 +66,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      username: profile.username || '',
-      fullName: profile.full_name || '',
+      username: profile.display_name || '',
+      fullName: profile.display_name || '',
       email: profile.email || '',
       walletAddress: profile.wallet_address,
       xpPoints: profile.xp_points || 0,

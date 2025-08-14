@@ -31,12 +31,14 @@ export class SupabaseStorage {
       const fileName = `${itemId}-${Date.now()}.${fileExt}`
       const filePath = `images/${fileName}`
 
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      // Upload to Supabase Storage with proper headers for NFT compatibility
+      const { error } = await supabase.storage
         .from(SupabaseStorage.BUCKET_NAME)
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: file.type,
+          duplex: 'half'
         })
 
       if (error) {
@@ -49,13 +51,15 @@ export class SupabaseStorage {
         }
       }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from(SupabaseStorage.BUCKET_NAME)
-        .getPublicUrl(filePath)
+      // Use API proxy URL for universal compatibility (MetaMask, OpenSea, etc.)
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+      
+      const proxyUrl = `${baseUrl}/api/nft/image/${filePath.replace('images/', '')}`;
 
       return {
-        url: urlData.publicUrl,
+        url: proxyUrl,
         path: filePath,
         success: true
       }
@@ -84,12 +88,13 @@ export class SupabaseStorage {
         type: 'application/json'
       })
 
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      // Upload to Supabase Storage with proper JSON content-type
+      const { error } = await supabase.storage
         .from(SupabaseStorage.BUCKET_NAME)
         .upload(filePath, metadataBlob, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: 'application/json'
         })
 
       if (error) {
@@ -102,13 +107,15 @@ export class SupabaseStorage {
         }
       }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from(SupabaseStorage.BUCKET_NAME)
-        .getPublicUrl(filePath)
+      // Use API proxy URL for universal compatibility
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+      
+      const proxyUrl = `${baseUrl}/api/nft/metadata/${filePath.replace('metadata/', '')}`;
 
       return {
-        url: urlData.publicUrl,
+        url: proxyUrl,
         path: filePath,
         success: true
       }

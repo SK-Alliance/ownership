@@ -5,7 +5,7 @@ class ItemService {
   /**
    * Register a new item with file uploads
    */
-  async registerItem(params: RegisterItemRequest & { walletAddress: string }): Promise<RegisterItemResponse> {
+  async registerItem(params: RegisterItemRequest & { walletAddress: string; imageUrl?: string }): Promise<RegisterItemResponse> {
     try {
       const formData = new FormData();
       
@@ -13,6 +13,10 @@ class ItemService {
       formData.append('category', params.category);
       formData.append('est_value', params.est_value?.toString() || '0');
       formData.append('wallet_address', params.walletAddress);
+      
+      if (params.imageUrl) {
+        formData.append('imageUrl', params.imageUrl);
+      }
       
       if (params.billFile) {
         formData.append('billFile', params.billFile);

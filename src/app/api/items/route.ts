@@ -16,8 +16,11 @@ export async function GET(request: NextRequest) {
 
     const { data: items, error } = await supabase
       .from('items')
-      .select('*')
-      .eq('owner_wallet_address', walletAddress)
+      .select(`
+        *,
+        owner:users!items_owner_id_fkey(wallet_address, display_name)
+      `)
+      .eq('users.wallet_address', walletAddress)
       .order('created_at', { ascending: false });
 
     if (error) {

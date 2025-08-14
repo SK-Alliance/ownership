@@ -20,12 +20,12 @@ export const useWalletConnection = () => {
     try {
       if (auth && typeof auth === 'object') {
         // Try different possible property names
-        const authObj = auth as any;
-        if (authObj.address) return authObj.address;
-        if (authObj.account) return authObj.account;
-        if (authObj.walletAddress) return authObj.walletAddress;
+        const authObj = auth as Record<string, unknown>;
+        if (authObj.address && typeof authObj.address === 'string') return authObj.address;
+        if (authObj.account && typeof authObj.account === 'string') return authObj.account;
+        if (authObj.walletAddress && typeof authObj.walletAddress === 'string') return authObj.walletAddress;
       }
-    } catch (error) {
+    } catch {
       // Ignore errors accessing auth properties
     }
     
