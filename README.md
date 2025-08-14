@@ -6,7 +6,7 @@ Auctor is a real-world asset registry that enables anyone to **register, verify,
 It is powered by [Camp Network's Origin SDK](https://docs.camp.network/) to provide:
 - **Tamperproof Proof of Possession Documents (PPD)**
 - **Full ownership history tracking**
-- **AI-assisted verification**
+- **User & Proof Verification**
 - **Co-ownership management**
 
 > **Problem:** Physical ownership proof is broken. Bills fade, receipts get lost, and screenshots can be forged.  
@@ -16,8 +16,8 @@ It is powered by [Camp Network's Origin SDK](https://docs.camp.network/) to prov
 
 ## 🚀 Features (MVP Scope)
 - Register physical items (electronics, vehicles, instruments, etc.)
-- AI-assisted verification of bills & IDs (OCR + NLP)
-- Mint **Origin IP Artifact** via `origin.register()`
+- Verification of bills & IDs by Persona
+- Mint **Origin IP Artifact** 
 - Generate **Proof of Possession Document (PPD)** with:
   - Verified metadata (title, category, value)
   - Co-owner list
@@ -31,13 +31,13 @@ It is powered by [Camp Network's Origin SDK](https://docs.camp.network/) to prov
 Auctor uses a **hybrid onchain–offchain** architecture:
 
 **Onchain (via Camp Origin SDK)**
-- Origin artifact creation (`origin.register()`)
+- Origin artifact creation 
 - Metadata storage: title, category, est. value, co-owners
 - Provenance tracking for edits/transfers
 
 **Offchain**
 - Verification data (invoice, ID) stored temporarily on IPFS via Pinata
-- OCR + AI verification processing
+- Persona - Verification processing
 - XP & monthly credits tracking
 
 ---
@@ -63,7 +63,7 @@ The PPD is a downloadable PDF that includes:
 
 ## ⚙️ Origin SDK Usage
 We used:
-- `origin.register()` to mint assets
+- mint assets as NFT and IP registry then stored on Pinata IPFS
 - Metadata storage for title, category, est. value, verification, and co-owners
 - Provenance tracking for co-owner changes
 - Planned resale & royalty logic in v2
@@ -71,30 +71,27 @@ We used:
 ---
 
 ## 📹 Demo Video
-[Watch the Demo](<video-link>)  
-[Twitter Post](<tweet-link>)
+[Watch the Demo](x.com/0xshubh4m)  
 
 ---
 
 ## 🌍 Live Deployment
-[Live Project Link](<vercel/netlify-link>)
+[Live Project Link](auctor-camp.vercel.app)
 
 ---
 
 ## 📂 Repository Structure
 ```
-/frontend     # Next.js UI
-/backend      # Backend services & API routes
-/scripts      # Deployment scripts & Origin SDK helpers
-/docs         # Project documentation (this file + others)
+/app     # Next.js UI, API and frontend files
+/contracts      # Smart contract
+/hooks      # reusable React logic
+/lib         # utility functions, SDK configs, and integrations
 ```
 
 ---
 
 ## 👥 Team
-- **Khushi (@smilewithkhushiyt)** — Product, Development, Integration
+- Khushi (@smilewithkhushi)
+- Shubham (@0xshubh4m)
 
 ---
-
-## 📜 License
-MIT License
