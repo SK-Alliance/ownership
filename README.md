@@ -28,8 +28,7 @@ It is powered by [Camp Network's Origin SDK](https://docs.camp.network/) to prov
 ---
 
 ## 🛠 Architecture Overview
-
-![Auctor Architecture](./public/auctor-architecture-userflow.png)
+![Auctor Architecture](./public/flowchart.png)
 
 Auctor uses a **hybrid onchain–offchain** architecture:
 
