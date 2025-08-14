@@ -4,9 +4,12 @@ import React from 'react';
 
 const AboutPage = () => {
   return (
-    <div>
-      <h1>About Us</h1>
-      <p>Welcome to our application!</p>
+    <div className="min-h-screen bg-main flex items-center justify-center px-6">
+      <div className="text-center">
+        <div className="text-6xl md:text-8xl font-bold text-gold animate-pulse">
+          LAUNCHING SOON
+        </div>
+      </div>
     </div>
   );
 };

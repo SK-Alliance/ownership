@@ -13,6 +13,10 @@ export async function POST(req: NextRequest): Promise<NextResponse<RegisterItemR
     const walletAddress = formData.get('wallet_address') as string;
     const billFile = formData.get('billFile') as File | null;
     const idFile = formData.get('idFile') as File | null;
+    const imageUrl = formData.get('imageUrl') as string | null;
+    const metadataUrl = formData.get('metadata_url') as string | null;
+    const serialNumber = formData.get('serial_number') as string | null;
+    const brand = formData.get('brand') as string | null;
 
     // Validate required fields
     if (!title || !category || !estValue || !walletAddress) {
@@ -23,7 +27,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<RegisterItemR
     }
 
     const estimatedValue = parseFloat(estValue);
-    if (isNaN(estimatedValue) || estimatedValue <= 0) {
+    if (isNaN(estimatedValue) || estimatedValue < 0) {
       return NextResponse.json({
         success: false,
         error: 'Invalid estimated value'
@@ -98,9 +102,13 @@ export async function POST(req: NextRequest): Promise<NextResponse<RegisterItemR
       .from('items')
       .insert({
         title,
+        brand,
         category,
+        serial_number: serialNumber,
         estimated_value: estimatedValue,
         owner_id: user.id,
+        image_url: imageUrl,
+        metadata_url: metadataUrl,
         bill_url: billUrl,
         bill_hash: billHash,
         id_url: idUrl,

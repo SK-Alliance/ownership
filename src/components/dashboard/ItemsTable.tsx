@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -95,10 +96,12 @@ export const ItemsTable: React.FC<ItemsTableProps> = ({ items }) => {
                 {/* Item Details */}
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    {item.item_image_url && (
-                      <img
-                        src={item.item_image_url}
+                    {item.image_url && (
+                      <Image
+                        src={item.image_url}
                         alt={item.title}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-lg object-cover border border-main/20"
                       />
                     )}
@@ -142,7 +145,7 @@ export const ItemsTable: React.FC<ItemsTableProps> = ({ items }) => {
                 {/* Documents */}
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    {item.item_image_url && (
+                    {item.image_url && (
                       <div className="w-2 h-2 bg-green rounded-full" title="Image uploaded" />
                     )}
                     {item.bill_url && (

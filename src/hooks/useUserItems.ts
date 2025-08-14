@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useWalletConnection } from './useWalletConnection';
 
 export interface UserItem {
@@ -10,7 +10,7 @@ export interface UserItem {
   estimated_value: number;
   owner_id: string;
   owner_wallet_address: string;
-  item_image_url: string | null;
+  image_url: string | null;
   bill_url: string | null;
   id_url: string | null;
   nft_certificate_url: string | null;
@@ -33,7 +33,7 @@ export const useUserItems = (): UseUserItemsReturn => {
   
   const { address, isConnected } = useWalletConnection();
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     if (!address || !isConnected) {
       setItems([]);
       setIsLoading(false);
@@ -64,11 +64,11 @@ export const useUserItems = (): UseUserItemsReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [address, isConnected]);
 
   useEffect(() => {
     fetchItems();
-  }, [address, isConnected]);
+  }, [address, isConnected, fetchItems]);
 
   return {
     items,

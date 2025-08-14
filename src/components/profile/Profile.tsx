@@ -9,7 +9,9 @@ import { User, Mail, Wallet, Edit3, Save, X, AlertCircle } from 'lucide-react';
 // Extend Window interface for ethereum
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: {
+      request: (args: { method: string }) => Promise<string[]>;
+    };
   }
 }
 
