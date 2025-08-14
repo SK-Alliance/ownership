@@ -599,7 +599,7 @@ export const OWNERSHIP_CERTIFICATE_ABI = [
 
 // Contract configuration with complete ABI
 export const CONTRACT_CONFIG = {
-  address: '0xf6910b20bf77f85BC4bf5E006F6103196b003085' as const,
+  address: '0x91C7187EDbb47a4556C39932f4B32B27107AEC76' as const,
   abi: OWNERSHIP_CERTIFICATE_ABI,
   owner: '0xc4935DDA27d2fADcbb8a5B64156C4791dF978a00' as const,
 } as const;

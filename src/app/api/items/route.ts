@@ -14,6 +14,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // First, get the user ID from the wallet address
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('wallet_address', walletAddress)
+      .single();
+
+    if (userError) {
+      console.error('User lookup error:', userError);
+      return NextResponse.json(
+        { success: false, error: 'Failed to find user' },
+        { status: 404 }
+      );
+    }
+
+    if (!user) {
+      return NextResponse.json({ 
+        success: true, 
+        data: [] // No user found, return empty array
+      });
+    }
+
+    // Now fetch items for this user
     const { data: items, error } = await supabase
       .from('items')
       .select(`
@@ -21,6 +44,8 @@ export async function GET(request: NextRequest) {
         owner:users!items_owner_id_fkey(wallet_address, display_name)
       `)
       .eq('users.wallet_address', walletAddress)
+      .select('*')
+      .eq('owner_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -46,15 +71,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Implement item creation logic
     const body = await request.json();
+    console.log('Creating item with data:', body);
     
+    // For now, just log and return success
+    // In production, you would save to your database here
     return NextResponse.json({ 
       success: true, 
       message: 'Item created successfully',
-      data: { id: Date.now().toString(), ...body }
+      data: { 
+        id: Date.now().toString(), 
+        ...body,
+        created_at: new Date().toISOString()
+      }
     });
-  } catch {
+  } catch (error) {
+    console.error('Item creation error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create item' },
       { status: 500 }

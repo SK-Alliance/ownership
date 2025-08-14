@@ -26,8 +26,14 @@ CREATE TABLE IF NOT EXISTS public.items (
     serial_number VARCHAR(255),
     estimated_value DECIMAL(12,2),
     artifact_id VARCHAR(255), -- For blockchain reference
-    image_url TEXT,
-    metadata_url TEXT,
+    image_url TEXT, -- IPFS URL for item image
+    image_hash VARCHAR(255), -- IPFS hash for item image
+    metadata_url TEXT, -- IPFS URL for NFT metadata
+    metadata_hash VARCHAR(255), -- IPFS hash for NFT metadata
+    bill_url TEXT, -- IPFS URL for bill/receipt document
+    bill_hash VARCHAR(255), -- IPFS hash for bill/receipt document
+    id_url TEXT, -- IPFS URL for ID document
+    id_hash VARCHAR(255), -- IPFS hash for ID document
     status VARCHAR(50) DEFAULT 'active',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

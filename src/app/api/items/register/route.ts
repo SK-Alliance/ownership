@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { PinataStorage } from '@/lib/pinata-storage';
 import { RegisterItemResponse } from '@/types/api';
 
 export async function POST(req: NextRequest): Promise<NextResponse<RegisterItemResponse>> {
@@ -48,71 +49,52 @@ export async function POST(req: NextRequest): Promise<NextResponse<RegisterItemR
     }
 
     let billUrl: string | null = null;
+    let billHash: string | null = null;
     let idUrl: string | null = null;
+    let idHash: string | null = null;
 
-    // Upload bill file to "proofs" bucket
+    // Upload bill file to Pinata IPFS
     if (billFile && billFile.size > 0) {
-      const billFileName = `${Date.now()}-${user.id}-bill-${billFile.name}`;
-      const billArrayBuffer = await billFile.arrayBuffer();
+      console.log('📄 Uploading bill document to IPFS via Pinata');
       
-      const { data: billUpload, error: billError } = await supabase.storage
-        .from('proofs')
-        .upload(billFileName, billArrayBuffer, {
-          contentType: billFile.type,
-          cacheControl: '3600'
-        });
+      const billResult = await PinataStorage.uploadDocument(billFile, walletAddress, 'bill');
 
-      if (billError) {
-        console.error('Bill upload error:', billError);
+      if (!billResult.success) {
+        console.error('Bill upload error:', billResult.error);
         return NextResponse.json({
           success: false,
-          error: `Failed to upload bill document: ${billError.message}`
+          error: `Failed to upload bill document: ${billResult.error}`
         }, { status: 500 });
       }
 
-      // Get public URL
-      const { data: billPublicUrl } = supabase.storage
-        .from('proofs')
-        .getPublicUrl(billUpload.path);
-      
-      billUrl = billPublicUrl.publicUrl;
+      billUrl = billResult.url;
+      billHash = billResult.hash;
+      console.log('✅ Bill uploaded to IPFS:', billHash);
     }
 
-    // Upload ID file to "ids" bucket
+    // Upload ID file to Pinata IPFS
     if (idFile && idFile.size > 0) {
-      const idFileName = `${Date.now()}-${user.id}-id-${idFile.name}`;
-      const idArrayBuffer = await idFile.arrayBuffer();
+      console.log('🆔 Uploading ID document to IPFS via Pinata');
       
-      const { data: idUpload, error: idError } = await supabase.storage
-        .from('ids')
-        .upload(idFileName, idArrayBuffer, {
-          contentType: idFile.type,
-          cacheControl: '3600'
-        });
+      const idResult = await PinataStorage.uploadDocument(idFile, walletAddress, 'id');
 
-      if (idError) {
-        console.error('ID upload error:', idError);
+      if (!idResult.success) {
+        console.error('ID upload error:', idResult.error);
         
-        // Cleanup bill file if it was uploaded
-        if (billUrl) {
-          const billPath = billUrl.split('/').pop();
-          if (billPath) {
-            await supabase.storage.from('proofs').remove([billPath]);
-          }
+        // Cleanup bill file if it was uploaded to IPFS
+        if (billHash) {
+          await PinataStorage.deleteFile(billHash);
         }
         
         return NextResponse.json({
           success: false,
-          error: `Failed to upload ID document: ${idError.message}`
+          error: `Failed to upload ID document: ${idResult.error}`
         }, { status: 500 });
       }
 
-      // Get public URL
-      const { data: idPublicUrl } = supabase.storage
-        .from('ids')
-        .getPublicUrl(idUpload.path);
-      
-      idUrl = idPublicUrl.publicUrl;
+      idUrl = idResult.url;
+      idHash = idResult.hash;
+      console.log('✅ ID uploaded to IPFS:', idHash);
     }
 
     // Insert item into database
@@ -128,7 +110,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<RegisterItemR
         image_url: imageUrl,
         metadata_url: metadataUrl,
         bill_url: billUrl,
+        bill_hash: billHash,
         id_url: idUrl,
+        id_hash: idHash,
         status: 'pending_verification',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -139,15 +123,13 @@ export async function POST(req: NextRequest): Promise<NextResponse<RegisterItemR
     if (insertError) {
       console.error('Database insert error:', insertError);
       
-      // Cleanup uploaded files on database error
+      // Cleanup uploaded files on database error from IPFS
       const cleanupPromises = [];
-      if (billUrl) {
-        const billPath = billUrl.split('/').pop();
-        if (billPath) cleanupPromises.push(supabase.storage.from('proofs').remove([billPath]));
+      if (billHash) {
+        cleanupPromises.push(PinataStorage.deleteFile(billHash));
       }
-      if (idUrl) {
-        const idPath = idUrl.split('/').pop();
-        if (idPath) cleanupPromises.push(supabase.storage.from('ids').remove([idPath]));
+      if (idHash) {
+        cleanupPromises.push(PinataStorage.deleteFile(idHash));
       }
       
       if (cleanupPromises.length > 0) {
@@ -189,7 +171,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<RegisterItemR
         estimated_value: insertedItem.estimated_value,
         owner_id: insertedItem.owner_id,
         bill_url: insertedItem.bill_url,
+        bill_hash: insertedItem.bill_hash,
         id_url: insertedItem.id_url,
+        id_hash: insertedItem.id_hash,
         status: insertedItem.status,
         created_at: insertedItem.created_at
       }

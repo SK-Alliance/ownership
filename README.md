@@ -1,113 +1,99 @@
-# Auctor 🏕️
+# Auctor — Real-World Asset Registry with Proof of Possession
 
-> **Own it. Prove it. Build it.**
+## 📌 Overview
+Auctor is a real-world asset registry that enables anyone to **register, verify, co-own, and transfer** physical items onchain.
 
-Auctor is a Web3 platform for proving ownership of real-world assets through tamperproof digital certificates. Built on Camp Network, we're creating the future of verifiable IP ownership.
+It is powered by [Camp Network's Origin SDK](https://docs.camp.network/) to provide:
+- **Tamperproof Proof of Possession Documents (PPD)**
+- **Full ownership history tracking**
+- **User & Proof Verification**
+- **Co-ownership management**
 
-## What is Auctor?
-
-Traditional ownership lacks digital proof - we lose receipts, bills fade, and ownership becomes a mess. Auctor fixes this by allowing you to:
-
-- **Register** any high-value item with proof
-- **Mint** it as verifiable IP onchain
-- **Transfer** ownership seamlessly
-- **Co-own** assets with others
-- **Resell** with preserved authenticity
-
-## How It Works
-
-1. **Upload** your bill + ID for proof
-2. **We verify** authenticity and ownership
-3. **We mint** your item as an origin IP artifact
-4. **You control** viewing, co-ownership, and transfers
-
-## Tech Stack
-
-- **Framework**: Next.js 15.4.6 with App Router
-- **Styling**: Tailwind CSS 4 with custom design system
-- **Animations**: Framer Motion 12.23.12
-- **Web3**: @campnetwork/origin, Viem
-- **State**: React Query, Apollo Client
-- **UI**: Custom liquid glass components
-- **Icons**: Lucide React
-
-## Getting Started
-
-```bash
-# Clone the repository
-git clone [repository-url]
-
-# Navigate to project
-cd camp-project
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the app.
-
-## Project Structure
-
-```
-src/
-├── app/                 # Next.js App Router
-├── components/          # React components
-│   ├── ui/             # Reusable UI components
-│   ├── HeroSection.tsx
-│   ├── ProblemSolutionSection.tsx
-│   ├── HowItWorksSection.tsx
-│   └── Footer.tsx
-├── lib/                # Utilities
-└── fonts/              # Custom fonts
-```
-
-## Features
-
-- ✨ **Liquid Glass Design System** - Premium morphism UI
-- 🎨 **Responsive Design** - Works on all devices
-- ⚡ **Smooth Animations** - Framer Motion powered
-- 🔗 **Web3 Integration** - Built on Camp Network
-- 🎯 **Component Architecture** - Clean, modular code
-
-## Development
-
-```bash
-# Development mode
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Lint code
-npm run lint
-```
-
-## Design System
-
-The project uses a custom design system with:
-- **Colors**: Gold (#FFD66B), Green (#6BEFA5), Blue (#6BCBFF)
-- **Typography**: Clash for headings, DM Sans for body
-- **Effects**: Liquid glass morphism throughout
-- **Animations**: Smooth, purposeful micro-interactions
-
-## Contributing
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Built With ❤️ by
-
-**[SK Alliance](https://sk-alliance.com)** - Building the future of digital ownership
+> **Problem:** Physical ownership proof is broken. Bills fade, receipts get lost, and screenshots can be forged.  
+> **Solution:** Auctor creates a permanent, verifiable, and transferable onchain record for your assets.
 
 ---
 
-*Auctor - Beyond NFTs, Beyond Hype. Real ownership for real assets.*
+## 🚀 Features (MVP Scope)
+- Register physical items (electronics, vehicles, instruments, etc.)
+- Verification of bills & IDs by Persona
+- Mint **Origin IP Artifact** 
+- Generate **Proof of Possession Document (PPD)** with:
+  - Verified metadata (title, category, value)
+  - Co-owner list
+  - Transfer history
+- Co-ownership management (add/remove with provenance tracking)
+- XP rewards for verified listings
+
+---
+
+## 🛠 Architecture Overview
+![Auctor Architecture](./public/flowchart.png)
+
+Auctor uses a **hybrid onchain–offchain** architecture:
+
+**Onchain (via Camp Origin SDK)**
+- Origin artifact creation 
+- Metadata storage: title, category, est. value, co-owners
+- Provenance tracking for edits/transfers
+
+**Offchain**
+- Verification data (invoice, ID) stored temporarily on IPFS via Pinata
+- Persona - Verification processing
+- XP & monthly credits tracking
+
+---
+
+## 🔗 Tech Stack
+- **Frontend:** Next.js (latest) + Tailwind + Framer Motion + shadcn/ui
+- **Backend:** Node.js / Express
+- **Blockchain:** Camp Network (Basecamp Testnet) + Wagmi
+- **Storage:** IPFS via Pinata
+- **Database/Auth:** Supabase
+- **AI:** Tesseract OCR / Google Vision API + LLM summarization
+
+---
+
+## 📄 Proof of Possession Document (PPD)
+The PPD is a downloadable PDF that includes:
+- Item metadata
+- Verified owner(s) & co-owners
+- Onchain Origin ID
+- Complete transfer history
+
+---
+
+## ⚙️ Origin SDK Usage
+We used:
+- mint assets as NFT and IP registry then stored on Pinata IPFS
+- Metadata storage for title, category, est. value, verification, and co-owners
+- Provenance tracking for co-owner changes
+- Planned resale & royalty logic in v2
+
+---
+
+## 📹 Demo Video
+[Watch the Demo](x.com/0xshubh4m)  
+
+---
+
+## 🌍 Live Deployment
+[Live Project Link](auctor-camp.vercel.app)
+
+---
+
+## 📂 Repository Structure
+```
+/app     # Next.js UI, API and frontend files
+/contracts      # Smart contract
+/hooks      # reusable React logic
+/lib         # utility functions, SDK configs, and integrations
+```
+
+---
+
+## 👥 Team
+- Khushi (@smilewithkhushi)
+- Shubham (@0xshubh4m)
+
+---

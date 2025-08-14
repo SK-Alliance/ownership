@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PinataStorage } from '@/lib/pinata-storage';
 
 // API to handle file uploading and IPFS metadata uploads
 export async function POST(request: NextRequest) {
@@ -10,21 +11,26 @@ export async function POST(request: NextRequest) {
       const body = await request.json();
       
       if (body.type === 'ipfs_metadata' && body.metadata) {
-        // Simulate IPFS upload for now
-        // In production, you would upload to actual IPFS service like Pinata, Web3.Storage, etc.
-        const mockIpfsHash = `Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+        console.log('📦 Uploading metadata to IPFS via Pinata:', body.metadata);
         
-        console.log('📦 Uploading metadata to IPFS:', body.metadata);
-        console.log('🔗 Mock IPFS hash:', mockIpfsHash);
+        // Upload metadata to Pinata IPFS
+        const result = await PinataStorage.uploadMetadata(body.metadata, body.itemId || 'metadata');
         
-        // Store metadata locally for now (in production, this would be on IPFS)
-        // You could also store this in your database
+        if (!result.success) {
+          return NextResponse.json({
+            success: false,
+            error: result.error || 'Failed to upload metadata to IPFS'
+          }, { status: 500 });
+        }
+        
+        console.log('🔗 IPFS hash:', result.hash);
         
         return NextResponse.json({ 
           success: true, 
           message: 'Metadata uploaded to IPFS successfully',
-          ipfsHash: mockIpfsHash,
-          metadataURI: `ipfs://${mockIpfsHash}`
+          ipfsHash: result.hash,
+          metadataURI: `ipfs://${result.hash}`,
+          url: result.url
         });
       }
     }
@@ -32,6 +38,7 @@ export async function POST(request: NextRequest) {
     // Handle regular file upload
     const formData = await request.formData();
     const file = formData.get('file') as File;
+    const itemId = formData.get('itemId') as string || 'file';
     
     if (!file) {
       return NextResponse.json(
@@ -40,17 +47,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Implement actual file upload logic (e.g., to cloud storage)
-    // For now, just return mock response
-    const mockFileUrl = `/uploads/${file.name}`;
+    console.log('📁 Uploading file to IPFS via Pinata:', file.name);
+    
+    // Upload file to Pinata IPFS
+    const result = await PinataStorage.uploadImage(file, itemId);
+    
+    if (!result.success) {
+      return NextResponse.json({
+        success: false,
+        error: result.error || 'Failed to upload file to IPFS'
+      }, { status: 500 });
+    }
+    
+    console.log('🔗 IPFS hash:', result.hash);
     
     return NextResponse.json({ 
       success: true, 
-      message: 'File uploaded successfully',
+      message: 'File uploaded to IPFS successfully',
       data: { 
         filename: file.name,
         size: file.size,
-        url: mockFileUrl
+        url: result.url,
+        ipfsHash: result.hash,
+        ipfsURI: `ipfs://${result.hash}`
       }
     });
   } catch (error) {

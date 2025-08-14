@@ -10,38 +10,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      user_profiles: {
-        Row: {
-          id: string
-          wallet_address: string
-          username: string | null
-          full_name: string | null
-          email: string | null
-          xp_points: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          wallet_address: string
-          username?: string | null
-          full_name?: string | null
-          email?: string | null
-          xp_points?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          wallet_address?: string
-          username?: string | null
-          full_name?: string | null
-          email?: string | null
-          xp_points?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
       users: {
         Row: {
           id: string
@@ -80,30 +48,46 @@ export type Database = {
           owner_id: string
           artifact_id: string
           title: string
+          brand: string | null
           category: string
           estimated_value: number | null
           serial_number: string | null
           verification_status: 'pending' | 'verified' | 'rejected'
+          image_url: string | null
+          image_hash: string | null
+          metadata_url: string | null
+          metadata_hash: string | null
           proof_document_url: string | null
           bill_url: string | null
+          bill_hash: string | null
           id_url: string | null
+          id_hash: string | null
           ai_ppd_url: string | null
+          status: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           owner_id: string
-          artifact_id: string
+          artifact_id?: string
           title: string
+          brand?: string | null
           category: string
           estimated_value?: number | null
           serial_number?: string | null
           verification_status?: 'pending' | 'verified' | 'rejected'
+          image_url?: string | null
+          image_hash?: string | null
+          metadata_url?: string | null
+          metadata_hash?: string | null
           proof_document_url?: string | null
           bill_url?: string | null
+          bill_hash?: string | null
           id_url?: string | null
+          id_hash?: string | null
           ai_ppd_url?: string | null
+          status?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -112,14 +96,22 @@ export type Database = {
           owner_id?: string
           artifact_id?: string
           title?: string
+          brand?: string | null
           category?: string
           estimated_value?: number | null
           serial_number?: string | null
           verification_status?: 'pending' | 'verified' | 'rejected'
+          image_url?: string | null
+          image_hash?: string | null
+          metadata_url?: string | null
+          metadata_hash?: string | null
           proof_document_url?: string | null
           bill_url?: string | null
+          bill_hash?: string | null
           id_url?: string | null
+          id_hash?: string | null
           ai_ppd_url?: string | null
+          status?: string | null
           created_at?: string
           updated_at?: string
         }

@@ -28,12 +28,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
-    // Check if username is already taken (if provided)
+    // Check if display name is already taken (if provided)
     if (username) {
-      const { data: existingUsername, error: usernameError } = await supabase
+      const { data: existingUser, error: usernameError } = await supabase
         .from('users')
         .select('wallet_address')
-        .eq('display_name', username.toLowerCase())
+        .eq('display_name', username)
         .neq('wallet_address', walletAddress.toLowerCase())
         .single();
 
@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
         throw usernameError;
       }
 
-      if (existingUsername) {
-        return NextResponse.json({ error: 'Username already taken' }, { status: 409 });
+      if (existingUser) {
+        return NextResponse.json({ error: 'Display name already taken' }, { status: 409 });
       }
     }
 
@@ -51,9 +51,10 @@ export async function POST(request: NextRequest) {
       .from('users')
       .upsert({
         wallet_address: walletAddress.toLowerCase(),
-        display_name: username || fullName || null,
+        display_name: username || null,
         email: email?.toLowerCase() || null,
         xp_points: 0, // Initialize with 0 XP for new profiles
+        monthly_credits: 5, // Initialize with default credits
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'wallet_address'
@@ -75,6 +76,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error saving profile:', error);
+    
+    // More specific error handling for network issues
+    if (error instanceof TypeError && error.message.includes('fetch failed')) {
+      return NextResponse.json(
+        { 
+          error: 'Database connection failed. Please check your internet connection and try again.',
+          details: 'Unable to reach Supabase database'
+        },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to save profile' },
       { status: 500 }
