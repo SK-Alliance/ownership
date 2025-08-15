@@ -14,6 +14,7 @@ export interface UserItem {
   bill_url: string | null;
   id_url: string | null;
   nft_certificate_url: string | null;
+  metadata_url: string | null;
   status: 'pending_verification' | 'verified' | 'rejected';
   created_at: string;
   updated_at: string;

@@ -226,7 +226,7 @@ export default function RegistrationForm() {
               const dbFormData = new FormData();
               dbFormData.append('title', formData.title);
               dbFormData.append('category', formData.category);
-              dbFormData.append('est_value', (formData.estimatedValue || 0).toString());
+              dbFormData.append('est_value', (formData.est_value || 0).toString());
               dbFormData.append('wallet_address', userAddress);
               dbFormData.append('imageUrl', uploadResult.imageUrl);
               dbFormData.append('metadata_url', uploadResult.metadataUrl);
@@ -286,14 +286,10 @@ export default function RegistrationForm() {
             };
 
             // Convert image to File for Origin SDK
-            // Try different possible auth properties
+            // Use Origin SDK for IP registration
             let result;
-            if (auth.origin) {
+            if (auth.origin?.mintFile) {
               result = await auth.origin.mintFile(file, ipMetadata, licenseTerms);
-            } else if (auth.client) {
-              result = await auth.client.mintFile(file, ipMetadata, licenseTerms);
-            } else if (auth.sdk) {
-              result = await auth.sdk.mintFile(file, ipMetadata, licenseTerms);
             } else {
               throw new Error('Origin SDK client not found in auth object. Available methods: ' + Object.keys(auth).join(', '));
             }
@@ -493,7 +489,10 @@ export default function RegistrationForm() {
                               const input = document.createElement('input');
                               input.type = 'file';
                               input.accept = 'image/png,image/jpeg,image/jpg';
-                              input.onchange = (e) => handleFileChange(e as React.ChangeEvent<HTMLInputElement>);
+                              input.onchange = (e) => {
+                                const event = e as unknown as React.ChangeEvent<HTMLInputElement>;
+                                handleFileChange(event);
+                              };
                               input.click();
                             }}
                             className="text-gold hover:text-gold/80 text-sm underline"

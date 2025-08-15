@@ -6,15 +6,6 @@ import { useAuthState, useAuth, useProvider } from '@campnetwork/origin/react';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Wallet, Edit3, Save, X, AlertCircle } from 'lucide-react';
 
-// Extend Window interface for ethereum
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string }) => Promise<string[]>;
-    };
-  }
-}
-
 interface UserProfile {
   username: string;
   fullName: string;

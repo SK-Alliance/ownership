@@ -65,12 +65,8 @@ export function RegisterIPOnly({ imageFile, itemData, onSuccess, onError }: Regi
 
       // Register IP using Origin SDK
       let result;
-      if (auth.origin) {
+      if (auth.origin?.mintFile) {
         result = await auth.origin.mintFile(imageFile, ipMetadata, licenseTerms);
-      } else if (auth.client) {
-        result = await auth.client.mintFile(imageFile, ipMetadata, licenseTerms);
-      } else if (auth.sdk) {
-        result = await auth.sdk.mintFile(imageFile, ipMetadata, licenseTerms);
       } else {
         throw new Error('Origin SDK client not found. Available methods: ' + Object.keys(auth).join(', '));
       }
@@ -78,8 +74,8 @@ export function RegisterIPOnly({ imageFile, itemData, onSuccess, onError }: Regi
       console.log('✅ IP registration successful:', result);
       
       onSuccess?.({
-        ipId: result.id || `ip_${Date.now()}`,
-        transactionHash: result.transactionHash
+        ipId: (result && typeof result === 'object' && 'id' in result ? (result as any).id : null) || `ip_${Date.now()}`,
+        transactionHash: result && typeof result === 'object' && 'transactionHash' in result ? (result as any).transactionHash : undefined
       });
       
     } catch (error) {

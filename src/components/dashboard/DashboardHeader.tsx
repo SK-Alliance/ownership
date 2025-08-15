@@ -9,14 +9,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getTierColor } from '@/data/dashboard';
 import { Shield, Trophy, Calendar } from 'lucide-react';
 
-// Extend Window interface for ethereum
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string }) => Promise<string[]>;
-    };
-  }
-}
 
 interface DashboardUser {
   walletAddress: string;
