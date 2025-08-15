@@ -12,7 +12,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Register Item', href: '/register' },
-    { name: 'About', href: '/about' }
+    { name: 'Marketplace v2', href: '/about' }
   ];
 
   const userLinks = [
