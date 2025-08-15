@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useUserItems } from '@/hooks/useUserItems';
 import { Filter, Grid, List, Search, SortAsc, RefreshCw, AlertCircle } from 'lucide-react';
+import { MintedNFTsSection } from './MintedNFTsSection';
 
 type FilterType = 'all' | 'verified' | 'pending_verification' | 'rejected';
 type SortType = 'newest' | 'oldest' | 'value-high' | 'value-low';
@@ -106,6 +107,9 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto">
           {/* Dashboard Header */}
           <DashboardHeader />
+
+          {/* Minted NFTs Section */}
+          <MintedNFTsSection />
 
           {/* Items Section */}
           <motion.div

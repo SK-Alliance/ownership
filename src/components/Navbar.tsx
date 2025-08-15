@@ -11,7 +11,8 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard' },
-    { name: 'Register Item', href: '/register' },
+    { name: 'Mint', href: '/mint' },
+    { name: 'IP Registry', href: '/register' },
     { name: 'Marketplace (v2)', href: '/marketplace' }
   ];
 

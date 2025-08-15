@@ -5,8 +5,6 @@ import { Shield, Upload, Image as ImageIcon, X, Sparkles } from 'lucide-react';
 import { NFTImageGenerator } from '@/lib/nft-image-generator';
 import { useWalletConnection } from '@/hooks/useWalletConnection';
 import { useAuthState, useAuth } from '@campnetwork/origin/react';
-import { useAccount, useWriteContract } from 'wagmi';
-import { CONTRACT_CONFIG } from '@/lib/contract-abi';
 import { SupabaseStorage } from '@/lib/supabase-storage';
 
 export default function RegistrationForm() {
@@ -21,7 +19,11 @@ export default function RegistrationForm() {
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [, setNftPreview] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<object | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    fullName?: string;
+    username?: string;
+    walletAddress?: string;
+  } | null>(null);
   const [isGeneratingNFT, setIsGeneratingNFT] = useState(false);
   const [showNFTModal, setShowNFTModal] = useState(false);
   const [finalNFTImage, setFinalNFTImage] = useState<string | null>(null);
@@ -30,8 +32,6 @@ export default function RegistrationForm() {
   const { isAuthenticated, address, user } = useWalletConnection();
   const { authenticated } = useAuthState();
   const auth = useAuth();
-  const { address: wagmiAddress, isConnected } = useAccount();
-  const { writeContract } = useWriteContract();
   
   // Minting options state
   const [mintingOption, setMintingOption] = useState<'nft' | 'ip' | 'both'>('both');
@@ -65,7 +65,7 @@ export default function RegistrationForm() {
           console.log('Profile not found, using fallback');
           // Create a fallback profile if API fails
           setUserProfile({
-            fullName: user?.display_name || 'Camp User',
+            fullName: (user as { display_name?: string })?.display_name || 'Camp User',
             username: 'camp_user',
             walletAddress: address
           });
@@ -74,7 +74,7 @@ export default function RegistrationForm() {
         console.error('Error fetching user profile:', error);
         // Create a fallback profile
         setUserProfile({
-          fullName: user?.display_name || 'Camp User',
+          fullName: (user as { display_name?: string })?.display_name || 'Camp User',
           username: 'camp_user',
           walletAddress: address
         });
@@ -92,7 +92,7 @@ export default function RegistrationForm() {
       try {
         setIsGeneratingNFT(true);
         // Use real profile data or fallback
-        const ownerName = userProfile?.fullName || userProfile?.username || user?.display_name || 'Camp User';
+        const ownerName = userProfile?.fullName || userProfile?.username || (user as { display_name?: string })?.display_name || 'Camp User';
         
         const nftImageDataURL = await NFTImageGenerator.generateNFTImage({
           itemImage: imagePreview,
@@ -130,7 +130,7 @@ export default function RegistrationForm() {
         setShowLoadingModal(true); // Show loading modal
         
         // Use real profile data or fallback
-        const ownerName = userProfile?.fullName || userProfile?.username || user?.display_name || 'Camp User';
+        const ownerName = userProfile?.fullName || userProfile?.username || (user as { display_name?: string })?.display_name || 'Camp User';
         console.log(`🎨 Generating NFT for owner: ${ownerName}`);
         
         const finalNFTImageData = await NFTImageGenerator.generateNFTImage({
@@ -171,7 +171,7 @@ export default function RegistrationForm() {
       const blob = await response.blob();
       const file = new File([blob], `${formData.serialNumber}-certificate.png`, { type: 'image/png' });
       
-      const userAddress = wagmiAddress || address || 'camp-connected-user';
+      const userAddress = address || 'camp-connected-user';
       
       console.log(`🚀 Starting dual minting process (${mintingOption})`);
       
@@ -203,30 +203,15 @@ export default function RegistrationForm() {
         
         console.log('✅ Supabase upload successful:', uploadResult.metadataUrl);
         
-        // Mint NFT on BaseCamp using wagmi
-        if (isConnected && wagmiAddress) {
-          try {
-            writeContract({
-              ...CONTRACT_CONFIG,
-              functionName: 'mintTo',
-              args: [wagmiAddress as `0x${string}`, uploadResult.metadataUrl],
-            });
-            
-            nftResult = {
-              success: true,
-              metadataUrl: uploadResult.metadataUrl,
-              imageUrl: uploadResult.imageUrl,
-              contractAddress: CONTRACT_CONFIG.address
-            };
-            
-            console.log('✅ NFT minting transaction submitted');
-          } catch (error) {
-            console.error('NFT minting failed:', error);
-            nftResult = { success: false, error: error instanceof Error ? error.message : 'NFT minting failed' };
-          }
-        } else {
-          throw new Error('Wallet not connected for NFT minting');
-        }
+        // Note: Traditional NFT minting functionality removed
+        // Now using only Camp Network Origin SDK for IP-NFT creation
+        console.log('🎯 Traditional NFT minting skipped - using Camp Network Origin SDK only');
+        nftResult = {
+          success: true,
+          metadataUrl: uploadResult.metadataUrl,
+          imageUrl: uploadResult.imageUrl,
+          message: 'Skipping traditional NFT mint - using Origin SDK only'
+        };
       }
 
       // Option 2 & 3: IP Registration via Origin SDK
@@ -447,7 +432,7 @@ export default function RegistrationForm() {
                               const input = document.createElement('input');
                               input.type = 'file';
                               input.accept = 'image/png,image/jpeg,image/jpg';
-                              input.onchange = (e) => handleFileChange(e as Event);
+                              input.onchange = (e) => handleFileChange(e as unknown as React.ChangeEvent<HTMLInputElement>);
                               input.click();
                             }}
                             className="text-gold hover:text-gold/80 text-sm underline"

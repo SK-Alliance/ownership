@@ -535,4 +535,174 @@
 .camp-modal-container button[class*="account"]:hover {
   background: #5dd494 !important;
 }
+
+/* ===== MODAL/DIALOG STYLING ===== */
+
+/* Dialog overlay - solid dark background */
+[data-radix-dialog-overlay] {
+  background-color: rgba(15, 15, 16, 0.95) !important;
+  backdrop-filter: blur(4px) !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9998 !important;
+}
+
+/* Dialog content - let Tailwind handle positioning */
+[data-radix-dialog-content] {
+  background-color: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-elevated) !important;
+  color: var(--text-main) !important;
+  z-index: 9999 !important;
+}
+
+/* Dialog title styling */
+[data-radix-dialog-title] {
+  color: var(--text-main) !important;
+  font-weight: 600 !important;
+}
+
+/* Dialog description styling */
+[data-radix-dialog-description] {
+  color: var(--text-muted) !important;
+}
+
+/* Prevent background scrolling when modal is open */
+body[data-scroll-locked] {
+  overflow: hidden !important;
+}
+
+/* ===== SELECT DROPDOWN DARK STYLING ===== */
+
+/* Style the Select dropdown content to have dark background */
+[data-radix-select-content] {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-button) !important;
+  box-shadow: var(--shadow-elevated) !important;
+  z-index: 50 !important;
+}
+
+/* Style individual select items */
+[data-radix-select-item] {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+  border-radius: var(--radius-small) !important;
+  margin: 2px !important;
+  transition: var(--transition-base) !important;
+}
+
+[data-radix-select-item]:hover {
+  background-color: var(--accent-gold) !important;
+  color: var(--bg-main) !important;
+}
+
+[data-radix-select-item][data-highlighted] {
+  background-color: var(--accent-gold) !important;
+  color: var(--bg-main) !important;
+  outline: none !important;
+}
+
+[data-radix-select-item][data-state="checked"] {
+  background-color: rgba(255, 214, 107, 0.2) !important;
+  color: var(--accent-gold) !important;
+}
+
+/* Style the select viewport */
+[data-radix-select-viewport] {
+  padding: 4px !important;
+}
+
+/* Alternative class-based selectors for shadcn/ui components */
+.select-content {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-button) !important;
+  box-shadow: var(--shadow-elevated) !important;
+}
+
+.select-item {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+  transition: var(--transition-base) !important;
+}
+
+.select-item:hover,
+.select-item[data-highlighted] {
+  background-color: var(--accent-gold) !important;
+  color: var(--bg-main) !important;
+}
+
+/* Ensure Select trigger also has proper styling */
+[data-radix-select-trigger] {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--card-border) !important;
+  color: var(--text-main) !important;
+}
+
+[data-radix-select-trigger]:focus {
+  border-color: var(--accent-gold) !important;
+  outline: 2px solid var(--accent-gold) !important;
+  outline-offset: 2px !important;
+}
+
+/* More specific selectors for the dropdown portal */
+[data-radix-popper-content-wrapper] [data-radix-select-content] {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: var(--shadow-elevated) !important;
+}
+
+/* Target any dropdown that appears in portals */
+body > div[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
+body > div[data-radix-popper-content-wrapper] [role="listbox"] {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-button) !important;
+  box-shadow: var(--shadow-elevated) !important;
+}
+
+body > div[data-radix-popper-content-wrapper] [role="option"] {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+  padding: 8px 12px !important;
+  transition: var(--transition-base) !important;
+}
+
+body > div[data-radix-popper-content-wrapper] [role="option"]:hover,
+body > div[data-radix-popper-content-wrapper] [role="option"][data-highlighted] {
+  background-color: var(--accent-gold) !important;
+  color: var(--bg-main) !important;
+}
+
+/* Shadcn UI specific classes */
+div[data-radix-select-content] {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--card-border) !important;
+  color: var(--text-main) !important;
+}
+
+div[data-radix-select-content] [data-radix-select-item] {
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+}
+
+div[data-radix-select-content] [data-radix-select-item]:hover {
+  background-color: var(--accent-gold) !important;
+  color: var(--bg-main) !important;
+}
+
+/* Additional fallback for any dropdown content */
+[data-state="open"] [data-radix-select-content],
+[data-side] [data-radix-select-content] {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--card-border) !important;
+  color: var(--text-main) !important;
+}
 }

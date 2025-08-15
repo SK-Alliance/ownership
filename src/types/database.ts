@@ -10,6 +10,98 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      minted_nfts: {
+        Row: {
+          id: string
+          owner_id: string
+          token_id: string | null
+          contract_address: string | null
+          transaction_hash: string | null
+          item_name: string
+          model: string
+          manufacturer: string
+          category: string
+          estimated_value: number
+          description: string
+          original_image_url: string | null
+          nft_image_url: string | null
+          image_file_name: string | null
+          image_file_size: number | null
+          image_content_type: string | null
+          ipfs_metadata_url: string | null
+          ipfs_image_url: string | null
+          license_price: number
+          license_duration: number
+          license_royalty_bps: number
+          license_payment_token: string
+          mint_status: string
+          network: string
+          nft_type: string
+          created_at: string
+          minted_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          owner_id: string
+          token_id?: string | null
+          contract_address?: string | null
+          transaction_hash?: string | null
+          item_name: string
+          model: string
+          manufacturer: string
+          category: string
+          estimated_value: number
+          description: string
+          original_image_url?: string | null
+          nft_image_url?: string | null
+          image_file_name?: string | null
+          image_file_size?: number | null
+          image_content_type?: string | null
+          ipfs_metadata_url?: string | null
+          ipfs_image_url?: string | null
+          license_price?: number
+          license_duration?: number
+          license_royalty_bps?: number
+          license_payment_token?: string
+          mint_status?: string
+          network?: string
+          nft_type?: string
+          created_at?: string
+          minted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          owner_id?: string
+          token_id?: string | null
+          contract_address?: string | null
+          transaction_hash?: string | null
+          item_name?: string
+          model?: string
+          manufacturer?: string
+          category?: string
+          estimated_value?: number
+          description?: string
+          original_image_url?: string | null
+          nft_image_url?: string | null
+          image_file_name?: string | null
+          image_file_size?: number | null
+          image_content_type?: string | null
+          ipfs_metadata_url?: string | null
+          ipfs_image_url?: string | null
+          license_price?: number
+          license_duration?: number
+          license_royalty_bps?: number
+          license_payment_token?: string
+          mint_status?: string
+          network?: string
+          nft_type?: string
+          created_at?: string
+          minted_at?: string
+          updated_at?: string
+        }
+      }
       users: {
         Row: {
           id: string

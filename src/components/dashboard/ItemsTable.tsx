@@ -70,7 +70,7 @@ const getCategoryIcon = (category: string) => {
 
 export const ItemsTable: React.FC<ItemsTableProps> = ({ items }) => {
   return (
-    <div className="bg-main/5 border border-main/10 rounded-xl overflow-hidden">
+    <div className="bg-main/5 border border-main/10 rounded-xl overflow-hidden px-2 py-2 mx-2 md:mx-12">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-main/10 border-b border-main/10">

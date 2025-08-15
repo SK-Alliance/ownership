@@ -1,4 +1,4 @@
-import { pinata } from './pinata';
+
 
 export interface UploadResult {
   url: string;

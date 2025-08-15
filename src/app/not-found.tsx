@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, ArrowLeft, Shield, Search } from 'lucide-react';
+import { Home, ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -15,16 +15,6 @@ export default function NotFound() {
           <div className="relative">
             <div className="text-8xl md:text-9xl font-bold text-transparent bg-gradient-to-r from-accent-red via-accent-blue to-accent-green bg-clip-text animate-pulse">
               404
-            </div>
-          </div>
-
-          {/* Logo and Branding */}
-          <div className="flex justify-center mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center shadow-elevated">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-main">Auctor</h1>
             </div>
           </div>
 

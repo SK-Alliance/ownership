@@ -144,6 +144,37 @@ export const Step2NFTPreview: React.FC<Step2Props> = ({
         </div>
       </div>
 
+      {/* Item Details Preview - NEW SECTION */}
+      <div className="max-w-lg mx-auto bg-card/30 rounded-lg p-4 border border-main/10">
+        <h3 className="text-lg font-semibold text-main mb-3">Item Details</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div>
+            <span className="text-muted">Name:</span>
+            <span className="text-main font-medium ml-2">{formData.title}</span>
+          </div>
+          <div>
+            <span className="text-muted">Category:</span>
+            <span className="text-main font-medium ml-2">{formData.category}</span>
+          </div>
+          <div>
+            <span className="text-muted">Brand:</span>
+            <span className="text-main font-medium ml-2">{formData.brand}</span>
+          </div>
+          <div>
+            <span className="text-muted">Serial:</span>
+            <span className="text-main font-medium ml-2">{formData.serialNumber}</span>
+          </div>
+          <div className="col-span-full">
+            <span className="text-muted">Est. Value:</span>
+            <span className="text-main font-medium ml-2">${formData.est_value.toLocaleString()}</span>
+          </div>
+          <div className="col-span-full">
+            <span className="text-muted">Owner:</span>
+            <span className="text-main font-medium ml-2">{userProfile?.display_name || 'Unknown Owner'}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Minting Options */}
       <div className="space-y-6 pt-6 border-t border-main/10">
         <div className="text-center">

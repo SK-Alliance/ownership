@@ -2,15 +2,13 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@campnetwork/origin/react';
-import { useAccount } from 'wagmi';
+import { useAuth, useAuthState } from '@campnetwork/origin/react';
 import { toast } from 'sonner';
 import { uploadFileToIPFS } from '@/lib/utils/upload';
 import { Loader2, Shield } from 'lucide-react';
 
 interface MintButtonProps {
   image: File | null;
-  address: string;
   ipName: string;
   ipDescription: string;
 }
@@ -34,7 +32,6 @@ interface AuthWithOrigin {
 
 export const MintButton: React.FC<MintButtonProps> = ({
   image,
-  address,
   ipName,
   ipDescription
 }) => {
@@ -42,7 +39,7 @@ export const MintButton: React.FC<MintButtonProps> = ({
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   
   const auth = useAuth();
-  const { isConnected } = useAccount();
+  const { authenticated } = useAuthState();
 
   // Define license terms - can be customized
   const licenseTerms: LicenseTerms = {
@@ -54,8 +51,8 @@ export const MintButton: React.FC<MintButtonProps> = ({
 
   const handleRegisterIP = async () => {
     // Check if user is connected
-    if (!isConnected || !address) {
-      toast.error('Please connect your wallet first');
+    if (!authenticated) {
+      toast.error('Please connect to Camp Network first');
       return;
     }
 
@@ -181,7 +178,7 @@ export const MintButton: React.FC<MintButtonProps> = ({
           Your NFT is now live and registered as intellectual property on the Camp Network.
         </p>
         <p className="text-sm text-muted">
-          You can view your registration history with the connected wallet address: {address}
+          You can view your registration history in your Camp Network profile.
         </p>
       </div>
     );
@@ -190,7 +187,7 @@ export const MintButton: React.FC<MintButtonProps> = ({
   return (
     <Button
       onClick={handleRegisterIP}
-      disabled={!image || !ipName || !ipDescription || isRegistering || !isConnected}
+      disabled={!image || !ipName || !ipDescription || isRegistering || !authenticated}
       className="w-full px-8 py-3 bg-gradient-to-r from-green to-green/80 text-white font-medium rounded-lg hover:shadow-lg hover:shadow-green/25 transition-all duration-200 disabled:opacity-50"
     >
       {isRegistering ? (

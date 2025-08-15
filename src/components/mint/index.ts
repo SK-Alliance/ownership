@@ -1,3 +1,8 @@
 export { MintNFTOnly } from './MintNFTOnly';
-export { RegisterIPOnly } from './RegisterIPOnly';
-export { MintBothNFTAndIP } from './MintBothNFTAndIP';
+
+// New mint components
+export { MintForm } from './MintForm';
+export { NFTPreviewModal } from './NFTPreviewModal';
+export { ExtraInfo } from './ExtraInfo';
+export { useCampMinting } from './useCampMinting';
+export type { MintFormData } from './MintForm';

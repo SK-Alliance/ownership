@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useAuthState, useAuth, useProvider } from '@campnetwork/origin/react';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getTierColor } from '@/data/dashboard';
 import { Shield, Trophy, Calendar } from 'lucide-react';
@@ -166,7 +165,6 @@ export default function DashboardHeader() {
   if (!user) return null;
 
   const maxXP = 100;
-  const progressPercentage = Math.min((user.xpPoints / maxXP) * 100, 100);
 
   // Format wallet address
   const formatAddress = (address: string) => {
@@ -272,60 +270,16 @@ export default function DashboardHeader() {
                 <Calendar className="w-3 h-3" />
                 <span>Resets Sep 1</span>
               </div>
+              
+            </div>
+              <div className="text-right mx-4">
+              <div className="text-2xl font-bold text-main">{user.xpPoints}</div>
+              <div className="text-sm text-muted">/ {maxXP} XP</div>
             </div>
           </motion.div>
         </div>
 
-        {/* XP Progress Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="mt-8 space-y-4"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-main mb-1">Experience Points</h3>
-              <p className="text-sm text-muted">
-                Keep registering items to unlock new tiers and benefits
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-main">{user.xpPoints}</div>
-              <div className="text-sm text-muted">/ {maxXP} XP</div>
-            </div>
-          </div>
-
-          {/* Animated Progress Bar */}
-          <div className="space-y-2">
-            <Progress 
-              value={progressPercentage} 
-              className="h-3 bg-main/10"
-            />
-            <div className="flex justify-between text-xs text-muted">
-              <span>New User (0 XP)</span>
-              <span>Verified Collector (21+ XP)</span>
-              <span>Power Owner (51+ XP)</span>
-            </div>
-          </div>
-
-          {/* Next Tier Info */}
-          {user.tier !== 'Power Owner' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 0.4 }}
-              className="text-center py-3 px-4 rounded-lg bg-main/5 border border-main/10"
-            >
-              <span className="text-sm text-muted">
-                {user.tier === 'New User' 
-                  ? `${21 - user.xpPoints} XP to Verified Collector`
-                  : `${51 - user.xpPoints} XP to Power Owner`
-                }
-              </span>
-            </motion.div>
-          )}
-        </motion.div>
+      
       </div>
     </motion.div>
   );

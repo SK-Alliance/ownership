@@ -1,9 +1,9 @@
 'use client';
 
-import HeroSection from '@/components/HeroSection';
-import ProblemSolutionSection from '@/components/ProblemSolutionSection';
-import HowItWorksSection from '@/components/HowItWorksSection';
-import WhatMakesItDifferentSection from '@/components/WhatMakesItDifferentSection';
+import HeroSection from '@/components/home/HeroSection';
+import ProblemSolutionSection from '@/components/home/ProblemSolutionSection';
+import HowItWorksSection from '@/components/home/HowItWorksSection';
+import WhatMakesItDifferentSection from '@/components/home/WhatMakesItDifferentSection';
 
 
 export default function Home() {
