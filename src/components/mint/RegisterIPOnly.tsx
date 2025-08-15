@@ -73,9 +73,14 @@ export function RegisterIPOnly({ imageFile, itemData, onSuccess, onError }: Regi
       
       console.log('✅ IP registration successful:', result);
       
+      interface IPResult {
+        id?: string;
+        transactionHash?: string;
+      }
+      
       onSuccess?.({
-        ipId: (result && typeof result === 'object' && 'id' in result ? (result as any).id : null) || `ip_${Date.now()}`,
-        transactionHash: result && typeof result === 'object' && 'transactionHash' in result ? (result as any).transactionHash : undefined
+        ipId: (result && typeof result === 'object' && 'id' in result ? (result as IPResult).id : null) || `ip_${Date.now()}`,
+        transactionHash: result && typeof result === 'object' && 'transactionHash' in result ? (result as IPResult).transactionHash : undefined
       });
       
     } catch (error) {

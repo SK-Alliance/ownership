@@ -141,9 +141,14 @@ export function MintBothNFTAndIP({ imageFile, itemData, onSuccess, onError }: Mi
         
         console.log('✅ IP registration successful:', result);
         
+        interface IPResult {
+          id?: string;
+          transactionHash?: string;
+        }
+        
         const ipRes = {
-          ipId: (result && typeof result === 'object' && 'id' in result ? (result as any).id : null) || `ip_${Date.now()}`,
-          transactionHash: result && typeof result === 'object' && 'transactionHash' in result ? (result as any).transactionHash : undefined
+          ipId: (result && typeof result === 'object' && 'id' in result ? (result as IPResult).id : null) || `ip_${Date.now()}`,
+          transactionHash: result && typeof result === 'object' && 'transactionHash' in result ? (result as IPResult).transactionHash : undefined
         };
         setIpResult(ipRes);
         
