@@ -47,6 +47,7 @@ const nextConfig = {
   
   // Reduce bundle size
   experimental: {
+    useLightningcss: false, // ✅ Disable Lightning CSS to fix missing binary error
     optimizePackageImports: ['@rainbow-me/rainbowkit', 'wagmi', 'viem'],
   },
   
